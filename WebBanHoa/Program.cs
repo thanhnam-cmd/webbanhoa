@@ -22,6 +22,12 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     if (!string.IsNullOrEmpty(databaseUrl))
         opt.UseNpgsql(DbConfig.PostgresFromUrl(databaseUrl));
+    else if (Environment.GetEnvironmentVariable("DB_PROVIDER") == "sqlite")
+    {
+        // Bản demo trên Render: SQLite nhúng, dữ liệu mẫu tự tạo lại khi khởi động
+        Directory.CreateDirectory("data");
+        opt.UseSqlite("Data Source=data/webbanhoa.db");
+    }
     else
         opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });

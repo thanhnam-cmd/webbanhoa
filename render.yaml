@@ -1,4 +1,6 @@
-# Render Blueprint: 1 web service (Docker) + 1 PostgreSQL miễn phí
+# Render Blueprint: web service Docker (gói Free).
+# Mặc định dùng SQLite nhúng (dữ liệu mẫu tự tạo lại mỗi lần khởi động).
+# Muốn dữ liệu lâu dài: tạo PostgreSQL trên Render rồi thêm biến DATABASE_URL (Internal Database URL).
 services:
   - type: web
     name: webbanhoa
@@ -7,10 +9,8 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: webbanhoa-db
-          property: connectionString
+      - key: DB_PROVIDER
+        value: sqlite
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: DemoPay__Secret
@@ -20,9 +20,3 @@ services:
         sync: false
       - key: VnPay__HashSecret
         sync: false
-
-databases:
-  - name: webbanhoa-db
-    plan: free
-    databaseName: webbanhoa
-    user: webbanhoa

@@ -48,5 +48,11 @@ public class AppDbContext : DbContext, IDataProtectionKeyContext
             .HasForeignKey(d => d.ProductId).OnDelete(DeleteBehavior.SetNull);
         b.Entity<PaymentTransaction>().HasOne(t => t.Order).WithMany(o => o.Transactions)
             .HasForeignKey(t => t.OrderId).OnDelete(DeleteBehavior.Cascade);
+
+        // SQLite không sắp xếp/tính tổng được kiểu decimal → lưu dạng số thực
+        if (Database.IsSqlite())
+            foreach (var p in b.Model.GetEntityTypes().SelectMany(t => t.GetProperties())
+                         .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+                p.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<decimal, double>(v => (double)v, v => (decimal)v));
     }
 }
