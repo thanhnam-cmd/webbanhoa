@@ -1,0 +1,42 @@
+@model PagedList<Order>
+@{
+    ViewData["Title"] = "Đơn hàng";
+    OrderStatus? status = ViewBag.Status;
+    var counts = (Dictionary<OrderStatus, int>)ViewBag.Counts;
+    var baseQuery = string.Join("&", new[] { string.IsNullOrEmpty(Model.Q) ? null : "q=" + Uri.EscapeDataString(Model.Q), status.HasValue ? "status=" + status : null }.Where(x => x != null));
+}
+<div class="page-head"><div><h2>Đơn hàng</h2><p>Duyệt, theo dõi giao hàng và xử lý thanh toán.</p></div></div>
+<div class="tabs">
+    <a href="/Admin/Orders" class="@(status == null ? "active" : "")">Tất cả <span>@counts.Values.Sum()</span></a>
+    @foreach (var s in Enum.GetValues<OrderStatus>())
+    {
+        <a href="/Admin/Orders?status=@s" class="@(status == s ? "active" : "")">@s.Label() <span>@(counts.GetValueOrDefault(s))</span></a>
+    }
+</div>
+<div class="panel">
+    <form class="panel-head">
+        @if (status.HasValue) { <input type="hidden" name="status" value="@status" /> }
+        <div class="search"><svg class="icon"><use href="#i-search" /></svg><input class="input" name="q" value="@Model.Q" placeholder="Mã đơn, tên, số điện thoại…" /></div>
+    </form>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Mã đơn</th><th>Người gửi</th><th>Người nhận / Giao</th><th>Thanh toán</th><th>Trạng thái</th><th class="r">Tổng tiền</th><th></th></tr></thead>
+            <tbody>
+                @if (!Model.Items.Any()) { <tr><td colspan="7" class="empty">Không có đơn hàng</td></tr> }
+                @foreach (var o in Model.Items)
+                {
+                    <tr>
+                        <td><div class="name">#@o.Code</div><div class="sub">@o.CreatedAt.ToLocal()</div></td>
+                        <td>@o.SenderName<div class="sub">@o.SenderPhone</div></td>
+                        <td>@o.ReceiverName<div class="sub">@o.DeliveryDate.ToString("dd/MM") · @o.DeliverySlot</div></td>
+                        <td><div class="sub" style="margin-bottom:3px">@(o.PaymentMethod == PaymentMethod.VNPay ? "VNPay" : "COD")</div><span class="pill st-@o.PaymentStatus.Css()">@o.PaymentStatus.Label()</span></td>
+                        <td><span class="pill st-@o.Status.Css()">@o.Status.Label()</span></td>
+                        <td class="r"><b>@o.Total.ToVnd()</b><div class="sub">@o.Details.Sum(d => d.Quantity) sản phẩm</div></td>
+                        <td><div class="actions"><a href="/Admin/Orders/Detail/@o.Id" class="btn btn-ghost btn-sm">Chi tiết</a></div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Pager" model="(Model.Page, Model.TotalPages, Model.Total, baseQuery)" />
+</div>

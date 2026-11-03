@@ -1,0 +1,25 @@
+@model Order?
+@{ ViewData["Title"] = "Tra cứu đơn hàng"; }
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span>Tra cứu đơn hàng</span></div>
+        <h1 data-split>Tra cứu đơn hàng</h1>
+        <p class="reveal">Nhập mã đơn hàng và số điện thoại người gửi hoặc người nhận để xem trạng thái đơn.</p>
+    </div>
+</section>
+<section class="container" style="max-width:900px">
+    <form class="card reveal" action="/tra-cuu-don-hang" style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+        <div class="field" style="margin:0"><label>Mã đơn hàng</label><input class="input" name="code" value="@ViewBag.Code" placeholder="VD: FL2611031234" required /></div>
+        <div class="field" style="margin:0"><label>Số điện thoại</label><input class="input" name="phone" value="@ViewBag.Phone" placeholder="0901 234 567" required /></div>
+        <button class="btn btn-primary"><svg class="icon"><use href="#i-search" /></svg> Tra cứu</button>
+    </form>
+    @if (ViewBag.NotFound == true)
+    {
+        <div class="empty" style="margin-top:20px"><h3>Không tìm thấy đơn hàng</h3><p>Vui lòng kiểm tra lại mã đơn và số điện thoại.</p></div>
+    }
+    @if (Model != null)
+    {
+        <div style="margin-top:20px" class="reveal"><partial name="_OrderBody" model="Model" /></div>
+    }
+</section>
+<style>@@media (max-width:640px){ form.card{ grid-template-columns:1fr !important } }</style>

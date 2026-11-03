@@ -1,0 +1,11 @@
+@model string?
+<div class="field">
+    <label>Hình ảnh</label>
+    <div class="img-drop">
+        <img src="@Model" alt="" @(string.IsNullOrEmpty(Model) ? "hidden" : "") />
+        <div class="hint"><b>Bấm để chọn ảnh</b> hoặc kéo thả vào đây<br />JPG, PNG, WEBP – tối đa 4MB</div>
+        <input type="file" name="upload" accept="image/png,image/jpeg,image/webp,image/gif" />
+    </div>
+    <input class="input" name="Image" value="@Model" placeholder="Hoặc dán đường dẫn ảnh" style="margin-top:8px" />
+    <span class="field-validation-error">@ViewContext.ViewData.ModelState["Image"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+</div>

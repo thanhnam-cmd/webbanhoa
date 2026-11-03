@@ -1,0 +1,112 @@
+@model CheckoutViewModel
+@inject VnPayService VnPay
+@{
+    ViewData["Title"] = "Thanh toán";
+    var cart = Model.Cart!;
+    var today = Helpers.VnNow.Date;
+}
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span><a href="/gio-hang">Giỏ hàng</a></span><span>Thanh toán</span></div>
+        <h1 data-split>Thông tin đặt hoa</h1>
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+            <p class="reveal">Bạn có thể đặt hàng không cần tài khoản. <a href="/tai-khoan/dang-nhap?returnUrl=/thanh-toan" style="color:var(--rose);font-weight:600">Đăng nhập</a> để điền thông tin nhanh hơn và theo dõi đơn dễ dàng.</p>
+        }
+    </div>
+</section>
+
+<form method="post" action="/thanh-toan" class="container checkout-layout" data-once>
+    @Html.AntiForgeryToken()
+    <div>
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <div class="card reveal">
+            <h3 class="card-title"><span class="num">1</span> Người gửi</h3>
+            <div class="grid-2">
+                <div class="field"><label asp-for="SenderName"></label><input class="input" asp-for="SenderName" placeholder="Nguyễn Văn A" /><span asp-validation-for="SenderName"></span></div>
+                <div class="field"><label asp-for="SenderPhone"></label><input class="input" asp-for="SenderPhone" placeholder="0901 234 567" inputmode="tel" /><span asp-validation-for="SenderPhone"></span></div>
+            </div>
+            <div class="field"><label asp-for="SenderEmail"></label><input class="input" asp-for="SenderEmail" placeholder="email@example.com (không bắt buộc)" /><span asp-validation-for="SenderEmail"></span></div>
+        </div>
+
+        <div class="card reveal">
+            <h3 class="card-title"><span class="num">2</span> Người nhận & giao hàng</h3>
+            <div class="grid-2">
+                <div class="field"><label asp-for="ReceiverName"></label><input class="input" asp-for="ReceiverName" placeholder="Tên người nhận hoa" /><span asp-validation-for="ReceiverName"></span></div>
+                <div class="field"><label asp-for="ReceiverPhone"></label><input class="input" asp-for="ReceiverPhone" placeholder="Số điện thoại người nhận" inputmode="tel" /><span asp-validation-for="ReceiverPhone"></span></div>
+            </div>
+            <div class="field"><label asp-for="Address"></label><input class="input" asp-for="Address" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" /><span asp-validation-for="Address"></span></div>
+            <div class="field">
+                <label asp-for="DeliveryDate"></label>
+                <input class="input" asp-for="DeliveryDate" type="date" min="@today.ToString("yyyy-MM-dd")" max="@today.AddDays(30).ToString("yyyy-MM-dd")" value="@Model.DeliveryDate.ToString("yyyy-MM-dd")" style="max-width:260px" />
+                <span asp-validation-for="DeliveryDate"></span>
+            </div>
+            <div class="field">
+                <label>Khung giờ giao</label>
+                <div class="slots">
+                    @foreach (var s in Helpers.DeliverySlots)
+                    {
+                        <label><input type="radio" name="DeliverySlot" value="@s" checked="@(Model.DeliverySlot == s)" /><span>@s</span></label>
+                    }
+                </div>
+                <span asp-validation-for="DeliverySlot"></span>
+            </div>
+        </div>
+
+        <div class="card reveal">
+            <h3 class="card-title"><span class="num">3</span> Thiệp & lời nhắn</h3>
+            <div class="grid-2" style="align-items:start">
+                <div>
+                    <div class="field"><label asp-for="CardMessage"></label><textarea class="input" asp-for="CardMessage" maxlength="300" placeholder="Ví dụ: Chúc mừng sinh nhật em yêu! Mãi xinh đẹp và hạnh phúc nhé ❤"></textarea></div>
+                    <div class="search-tags" style="margin:-6px 0 16px">
+                        <button type="button" class="chip" data-suggest="Chúc mừng sinh nhật! Tuổi mới thật nhiều niềm vui, sức khỏe và hạnh phúc.">🎂 Sinh nhật</button>
+                        <button type="button" class="chip" data-suggest="Gửi em ngàn lời yêu thương. Cảm ơn em đã luôn bên anh ❤">💕 Tình yêu</button>
+                        <button type="button" class="chip" data-suggest="Chúc mừng khai trương hồng phát – buôn may bán đắt – vạn sự như ý!">🎉 Khai trương</button>
+                    </div>
+                </div>
+                <div class="field"><label>Xem trước thiệp</label><div class="card-preview" id="cardPreview"></div></div>
+            </div>
+            <div class="field"><label asp-for="Note"></label><input class="input" asp-for="Note" placeholder="Ví dụ: Giao bí mật, không gọi trước cho người nhận" /></div>
+        </div>
+
+        <div class="card reveal">
+            <h3 class="card-title"><span class="num">4</span> Phương thức thanh toán</h3>
+            <div class="pay-options">
+                <label class="pay-option">
+                    <input type="radio" name="PaymentMethod" value="@PaymentMethod.VNPay" checked="@(Model.PaymentMethod == PaymentMethod.VNPay)" />
+                    <div><b>Thanh toán online qua VNPay</b><small>Thẻ ATM nội địa, Internet Banking, QR Code, Visa/Master</small></div>
+                    <span class="logo-pay logo-vnpay">VN<em>PAY</em></span>
+                </label>
+                <label class="pay-option">
+                    <input type="radio" name="PaymentMethod" value="@PaymentMethod.COD" checked="@(Model.PaymentMethod == PaymentMethod.COD)" />
+                    <div><b>Thanh toán khi nhận hàng (COD)</b><small>Trả tiền mặt cho nhân viên giao hoa</small></div>
+                    <span class="logo-pay logo-cod">COD</span>
+                </label>
+            </div>
+            @if (!VnPay.IsLive)
+            {
+                <p style="font-size:13px;color:var(--muted);margin:14px 0 0">* Môi trường demo: thanh toán VNPay được chuyển tới cổng sandbox mô phỏng, không trừ tiền thật.</p>
+            }
+        </div>
+    </div>
+
+    <aside class="card summary reveal" data-reveal="right">
+        <h3 class="card-title">Đơn hàng (@cart.Count)</h3>
+        <div class="mini-items">
+            @foreach (var l in cart.Lines)
+            {
+                <div class="mini-item">
+                    <div class="q"><img src="@l.Product.Image.ImageOrDefault()" alt="" /><span>@l.Quantity</span></div>
+                    <div>@l.Product.Name</div>
+                    <b>@l.LineTotal.ToVnd()</b>
+                </div>
+            }
+        </div>
+        <div class="summary-row"><span>Tạm tính</span><span>@cart.Subtotal.ToVnd()</span></div>
+        <div class="summary-row"><span>Phí giao hàng</span><span>@(cart.ShippingFee == 0 ? "Miễn phí" : cart.ShippingFee.ToVnd())</span></div>
+        <div class="summary-row total"><span>Tổng cộng</span><b>@cart.Total.ToVnd()</b></div>
+        <button type="submit" class="btn btn-rose btn-block" style="margin-top:20px">Đặt hàng <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></button>
+        <p style="font-size:12.5px;color:var(--muted);text-align:center;margin:12px 0 0">Bằng việc đặt hàng, bạn đồng ý với điều khoản dịch vụ của Floria.</p>
+    </aside>
+</form>

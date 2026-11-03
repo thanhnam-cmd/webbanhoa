@@ -1,0 +1,31 @@
+@model Post
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Description"] = Model.Summary;
+    var others = (List<Post>)ViewBag.Others;
+}
+<article class="container article" style="padding-top:40px">
+    <div class="crumbs"><a href="/">Trang chủ</a><span><a href="/tin-tuc">Tin tức</a></span><span>@Model.PostCategory?.Name</span></div>
+    <h1 class="serif reveal" style="font-size:clamp(36px,5vw,58px);margin-top:14px">@Model.Title</h1>
+    <div class="post-meta reveal"><span>@Model.CreatedAt.ToLocal()</span><span>@Model.Views lượt xem</span></div>
+    <div class="article-cover reveal" data-reveal="mask"><img src="@Model.Image.ImageOrDefault()" alt="@Model.Title" /></div>
+    <div class="prose reveal">@Html.Raw(Model.Content)</div>
+</article>
+@if (others.Any())
+{
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom:30px" data-split>Bài viết <em>khác</em></h2>
+            <div class="post-grid" data-stagger="0.08">
+                @foreach (var p in others)
+                {
+                    <a href="/tin-tuc/@p.Slug" class="post-card">
+                        <div class="post-img"><img src="@p.Image.ImageOrDefault()" alt="" loading="lazy" /></div>
+                        <h3>@p.Title</h3>
+                        <p>@p.Summary</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}

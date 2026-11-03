@@ -1,0 +1,111 @@
+@model Order
+@{
+    ViewData["Title"] = "Đơn hàng #" + Model.Code;
+    var closed = Model.Status is OrderStatus.DaHuy or OrderStatus.HoanThanh;
+    OrderStatus? next = Model.Status switch
+    {
+        OrderStatus.ChoXacNhan => OrderStatus.DaXacNhan,
+        OrderStatus.DaXacNhan => OrderStatus.DangGiao,
+        OrderStatus.DangGiao => OrderStatus.HoanThanh,
+        _ => null
+    };
+    var nextLabel = next switch { OrderStatus.DaXacNhan => "Duyệt đơn", OrderStatus.DangGiao => "Bắt đầu giao hàng", OrderStatus.HoanThanh => "Xác nhận đã giao", _ => "" };
+}
+<div class="page-head">
+    <div>
+        <h2>Đơn hàng #@Model.Code</h2>
+        <p><a href="/Admin/Orders">← Danh sách đơn hàng</a> · Đặt lúc @Model.CreatedAt.ToLocal()</p>
+    </div>
+    <div class="flow">
+        <a href="/Admin/Orders/Print/@Model.Id" target="_blank" class="btn btn-ghost"><svg class="icon"><use href="#i-list" /></svg> In hóa đơn</a>
+        @if (next != null)
+        {
+            <form method="post" action="/Admin/Orders/UpdateStatus/@Model.Id">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="status" value="@next" />
+                <button class="btn btn-rose"><svg class="icon"><use href="#i-check" /></svg> @nextLabel</button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="form-grid">
+    <div>
+        <div class="panel">
+            <div class="panel-head"><h3>Sản phẩm</h3><div class="flow"><span class="pill st-@Model.Status.Css()">@Model.Status.Label()</span><span class="pill st-@Model.PaymentStatus.Css()">@Model.PaymentStatus.Label()</span></div></div>
+            <div class="table-wrap">
+                <table class="tbl" style="min-width:480px">
+                    <thead><tr><th>Sản phẩm</th><th class="r">Đơn giá</th><th class="r">SL</th><th class="r">Thành tiền</th></tr></thead>
+                    <tbody>
+                        @foreach (var d in Model.Details)
+                        {
+                            <tr><td><div style="display:flex;gap:10px;align-items:center"><img class="thumb" src="@d.Image.ImageOrDefault()" alt="" />@d.ProductName</div></td><td class="r">@d.Price.ToVnd()</td><td class="r">@d.Quantity</td><td class="r"><b>@((d.Price * d.Quantity).ToVnd())</b></td></tr>
+                        }
+                        <tr><td colspan="3" class="r">Tạm tính</td><td class="r">@Model.Subtotal.ToVnd()</td></tr>
+                        <tr><td colspan="3" class="r">Phí giao hàng</td><td class="r">@(Model.ShippingFee == 0 ? "Miễn phí" : Model.ShippingFee.ToVnd())</td></tr>
+                        <tr><td colspan="3" class="r"><b>Tổng cộng</b></td><td class="r"><b style="font-size:18px;color:var(--rose-d)">@Model.Total.ToVnd()</b></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head"><h3>Lịch sử thanh toán online</h3></div>
+            @if (!Model.Transactions.Any()) { <div class="empty" style="padding:14px">Chưa có giao dịch online</div> }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="tbl">
+                        <thead><tr><th>Thời gian</th><th>Cổng</th><th>Mã tham chiếu</th><th>Mã GD</th><th>Ngân hàng</th><th>Kết quả</th><th class="r">Số tiền</th></tr></thead>
+                        <tbody>
+                            @foreach (var t in Model.Transactions.OrderByDescending(t => t.CreatedAt))
+                            {
+                                <tr><td>@t.CreatedAt.ToLocal()</td><td>@t.Provider</td><td class="sub">@t.TxnRef</td><td>@t.TransactionNo</td><td>@t.BankCode</td><td><span class="pill @(t.IsSuccess ? "st-ok" : "st-danger")">@t.ResponseCode – @t.Message</span></td><td class="r">@t.Amount.ToVnd()</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+    <div>
+        <div class="panel">
+            <div class="panel-head"><h3>Giao hàng</h3></div>
+            <dl class="kv">
+                <dt>Người nhận</dt><dd>@Model.ReceiverName</dd>
+                <dt>Điện thoại</dt><dd><a href="tel:@Model.ReceiverPhone">@Model.ReceiverPhone</a></dd>
+                <dt>Địa chỉ</dt><dd>@Model.Address</dd>
+                <dt>Ngày giao</dt><dd>@Model.DeliveryDate.ToString("dd/MM/yyyy") · @Model.DeliverySlot</dd>
+                <dt>Lời nhắn thiệp</dt><dd><i>@(Model.CardMessage ?? "—")</i></dd>
+                <dt>Ghi chú</dt><dd>@(Model.Note ?? "—")</dd>
+            </dl>
+        </div>
+        <div class="panel">
+            <div class="panel-head"><h3>Người gửi & thanh toán</h3></div>
+            <dl class="kv">
+                <dt>Người gửi</dt><dd>@Model.SenderName @if (Model.Customer != null) { <span class="pill st-info">Thành viên</span> }</dd>
+                <dt>Điện thoại</dt><dd>@Model.SenderPhone</dd>
+                <dt>Email</dt><dd>@(Model.SenderEmail ?? "—")</dd>
+                <dt>Phương thức</dt><dd>@Model.PaymentMethod.Label()</dd>
+                <dt>Thanh toán</dt><dd><span class="pill st-@Model.PaymentStatus.Css()">@Model.PaymentStatus.Label()</span></dd>
+                @if (Model.Status == OrderStatus.DaHuy) { <dt>Lý do hủy</dt><dd>@Model.CancelReason</dd> }
+            </dl>
+            @if (Model.PaymentStatus != PaymentStatus.DaThanhToan && Model.Status != OrderStatus.DaHuy)
+            {
+                <form method="post" action="/Admin/Orders/MarkPaid/@Model.Id" style="margin-top:14px" data-confirm="Xác nhận đơn này đã được thanh toán?">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-ok"><svg class="icon"><use href="#i-card" /></svg> Xác nhận đã thanh toán</button>
+                </form>
+            }
+        </div>
+        @if (!closed)
+        {
+            <form method="post" action="/Admin/Orders/UpdateStatus/@Model.Id" class="panel" data-confirm="Hủy đơn hàng này? Tồn kho sẽ được hoàn lại.">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="status" value="@OrderStatus.DaHuy" />
+                <div class="panel-head"><h3>Hủy đơn hàng</h3></div>
+                <div class="field"><input class="input" name="reason" placeholder="Lý do hủy (VD: Khách yêu cầu hủy)" /></div>
+                <button class="btn btn-danger"><svg class="icon"><use href="#i-x" /></svg> Hủy đơn</button>
+            </form>
+        }
+    </div>
+</div>

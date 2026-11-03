@@ -1,0 +1,29 @@
+@model List<Slider>
+@{ ViewData["Title"] = "Slide trang chủ"; }
+<div class="page-head">
+    <div><h2>Slide trang chủ</h2><p>Banner luân phiên ở phần đầu trang chủ.</p></div>
+    <a href="/Admin/Sliders/Create" class="btn btn-rose"><svg class="icon"><use href="#i-plus" /></svg> Thêm slide</a>
+</div>
+<div class="panel">
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Ảnh</th><th>Tiêu đề</th><th>Đường dẫn</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td><img class="thumb" style="width:80px;background:#F3D5D3" src="@s.Image.ImageOrDefault()" alt="" /></td>
+                        <td><div class="name">@s.Title</div><div class="sub">@s.Subtitle</div></td>
+                        <td class="sub">@s.Link</td>
+                        <td>@s.SortOrder</td>
+                        <td><span class="pill @(s.IsActive ? "st-ok" : "st-muted")">@(s.IsActive ? "Hiển thị" : "Ẩn")</span></td>
+                        <td><div class="actions">
+                            <a href="/Admin/Sliders/Edit/@s.Id" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-pen" /></svg> Sửa</a>
+                            <form method="post" action="/Admin/Sliders/Delete/@s.Id" data-confirm="Xóa slide này?">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm icon-btn"><svg class="icon icon-sm"><use href="#i-trash" /></svg></button></form>
+                        </div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,239 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = null;
+    var slides = Model.Sliders.Any() ? Model.Sliders : new List<Slider> { new() { Title = "Gửi yêu thương qua từng cánh hoa", Image = "/img/flowers/hero1.svg", Link = "/cua-hang" } };
+}
+
+<section class="hero">
+    <div class="petals"></div>
+    <div class="container hero-grid">
+        <div class="hero-text">
+            <span class="eyebrow">Tiệm hoa tươi · Since 2020</span>
+            @for (var i = 0; i < slides.Count; i++)
+            {
+                var s = slides[i];
+                var words = s.Title.Split(' ');
+                var cut = Math.Max(1, words.Length - 2);
+                <div class="hero-copy" @(i > 0 ? "hidden" : "")>
+                    <h1>@string.Join(" ", words.Take(cut)) <em>@string.Join(" ", words.Skip(cut))</em></h1>
+                    <p class="hero-lead">@(s.Subtitle ?? "Hoa tươi cắm thủ công mỗi ngày, giao tận tay người thương.")</p>
+                </div>
+            }
+            <div class="hero-ctas">
+                <a href="/cua-hang" class="btn btn-primary">Đặt hoa ngay <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></a>
+                <a href="#danh-muc" class="btn btn-outline">Xem bộ sưu tập</a>
+            </div>
+            <div class="hero-stats">
+                <div><b data-count="12000" data-suffix="+">0</b><span>Bó hoa đã trao</span></div>
+                <div><b data-count="4.9" data-suffix="★">0</b><span>Đánh giá trung bình</span></div>
+                <div><b data-count="120" data-suffix="'">0</b><span>Giao hoa nhanh nhất</span></div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="arch" data-parallax="-0.06"></div>
+            @for (var i = 0; i < slides.Count; i++)
+            {
+                <a href="@(slides[i].Link ?? "/cua-hang")" class="hero-slide @(i == 0 ? "active" : "")"><img src="@slides[i].Image.ImageOrDefault()" alt="@slides[i].Title" /></a>
+            }
+            <div class="hero-badge b1"><span class="dot"><svg class="icon"><use href="#i-truck" /></svg></span><div><b>Giao trong 2 giờ</b>Nội thành Cần Thơ</div></div>
+            <div class="hero-badge b2"><span class="dot"><svg class="icon"><use href="#i-camera" /></svg></span><div><b>Chụp ảnh trước giao</b>Yên tâm 100%</div></div>
+            <div class="hero-caption">@for (var i = 0; i < slides.Count; i++) { <button aria-label="Slide @(i + 1)" class="@(i == 0 ? "active" : "")"></button> }</div>
+        </div>
+    </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+        @for (var k = 0; k < 2; k++)
+        {
+            <span>Hoa tươi mỗi sáng</span><span>Thiệp viết tay miễn phí</span><span>Giao nhanh 2 giờ</span><span>Thanh toán VNPay</span><span>Cắm thủ công bởi florist</span><span>Đổi trả nếu hoa héo</span>
+        }
+    </div>
+</div>
+
+<section class="section" id="danh-muc">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Danh mục</span>
+                <h2 class="section-title" data-split>Chọn hoa theo <em>phong cách</em></h2>
+            </div>
+            <a href="/cua-hang" class="link-arrow reveal">Xem tất cả <svg class="icon"><use href="#i-arrow" /></svg></a>
+        </div>
+        <div class="cat-grid" data-stagger="0.09">
+            @foreach (var c in Model.Categories)
+            {
+                <a href="/cua-hang?category=@c.Slug" class="cat-card">
+                    <div class="cat-img"><img src="@c.Image.ImageOrDefault()" alt="@c.Name" loading="lazy" /></div>
+                    <h3>@c.Name</h3>
+                    <span>@c.Description</span>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section bg-paper">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Được yêu thích</span>
+                <h2 class="section-title" data-split>Mẫu hoa <em>nổi bật</em></h2>
+                <p class="section-sub reveal">Những thiết kế được khách hàng Floria lựa chọn nhiều nhất trong tháng.</p>
+            </div>
+            <a href="/cua-hang?sort=ban-chay" class="link-arrow reveal">Xem thêm <svg class="icon"><use href="#i-arrow" /></svg></a>
+        </div>
+        <div class="product-grid" data-stagger="0.08">
+            @foreach (var p in Model.Featured) { <partial name="_ProductCard" model="p" /> }
+        </div>
+    </div>
+</section>
+
+<section class="section bg-ink">
+    <div class="container occasion-wrap">
+        <div>
+            <span class="eyebrow" style="color:#F2B8C0">Dịp tặng</span>
+            <h2 class="section-title" style="color:#fff" data-split>Mỗi khoảnh khắc<br />một <em style="color:#F2B8C0">bông hoa</em></h2>
+            <p class="reveal" style="color:#B6A79E;max-width:380px">Không biết tặng gì? Hãy để Floria gợi ý mẫu hoa phù hợp nhất cho từng dịp đặc biệt của bạn.</p>
+            <div class="reveal" data-reveal="zoom" style="margin-top:30px;max-width:330px" data-parallax="0.08"><img src="/img/flowers/p03.svg" alt="" style="border-radius:200px 200px 24px 24px" loading="lazy" /></div>
+        </div>
+        <div class="occasion-list" data-stagger="0.07" data-reveal-child="right">
+            @foreach (var o in Model.Occasions)
+            {
+                <a href="/cua-hang?occasion=@o.Slug"><span>@o.Name <small>— @o.Description</small></span><svg class="icon"><use href="#i-arrow" /></svg></a>
+            }
+        </div>
+    </div>
+</section>
+
+@if (Model.OnSale.Any())
+{
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">Ưu đãi</span>
+                    <h2 class="section-title" data-split>Đang <em>giảm giá</em></h2>
+                </div>
+                <a href="/cua-hang?sort=gia-tang" class="link-arrow reveal">Tất cả ưu đãi <svg class="icon"><use href="#i-arrow" /></svg></a>
+            </div>
+            <div class="product-grid" data-stagger="0.08" data-reveal-child="zoom">
+                @foreach (var p in Model.OnSale) { <partial name="_ProductCard" model="p" /> }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="section bg-blush">
+    <div class="container story">
+        <div class="story-media">
+            <div class="m1 reveal" data-reveal="mask"><img src="/img/flowers/p07.svg" alt="" loading="lazy" data-parallax="0.05" /></div>
+            <div class="m2 reveal" data-reveal="zoom" style="--d:.2s"><img src="/img/flowers/p15.svg" alt="" loading="lazy" /></div>
+            <div class="story-seal reveal" data-reveal="zoom" style="--d:.4s">
+                <svg viewBox="0 0 120 120"><defs><path id="circ" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0" /></defs><text><textPath href="#circ">Handmade with love · Floria · </textPath></text></svg>
+                <svg class="icon" style="width:34px;height:34px;position:static;animation:none"><use href="#i-flower" /></svg>
+            </div>
+        </div>
+        <div>
+            <span class="eyebrow">Câu chuyện Floria</span>
+            <h2 class="section-title" data-split>Hoa tươi, cắm bằng<br /><em>cả trái tim</em></h2>
+            <p class="reveal">Mỗi sáng, đội ngũ florist của Floria tuyển chọn những bông hoa tươi nhất từ Đà Lạt và nhập khẩu từ Hà Lan, Ecuador. Từng bó hoa được cắm thủ công, chụp ảnh gửi bạn duyệt trước khi giao tận tay người nhận.</p>
+            <div class="feature-list" data-stagger="0.1">
+                <div class="feature"><span class="fi"><svg class="icon"><use href="#i-leaf" /></svg></span><div><b>Hoa tươi mỗi ngày</b><span>Nhập mới mỗi sáng, cam kết tươi 3–5 ngày</span></div></div>
+                <div class="feature"><span class="fi"><svg class="icon"><use href="#i-truck" /></svg></span><div><b>Giao nhanh 2 giờ</b><span>Miễn phí cho đơn từ 500.000₫</span></div></div>
+                <div class="feature"><span class="fi"><svg class="icon"><use href="#i-gift" /></svg></span><div><b>Thiệp viết tay</b><span>Gửi gắm lời nhắn yêu thương miễn phí</span></div></div>
+                <div class="feature"><span class="fi"><svg class="icon"><use href="#i-shield" /></svg></span><div><b>Thanh toán an toàn</b><span>VNPay, thẻ ATM hoặc COD</span></div></div>
+            </div>
+            <a href="/gioi-thieu" class="btn btn-primary reveal" style="margin-top:34px">Về chúng tôi <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head" style="justify-content:center;text-align:center">
+            <div>
+                <span class="eyebrow">Đặt hoa dễ dàng</span>
+                <h2 class="section-title" data-split>Chỉ <em>4 bước</em> đơn giản</h2>
+            </div>
+        </div>
+        <div class="steps" data-stagger="0.12">
+            <div class="step"><span class="fi"><svg class="icon"><use href="#i-flower" /></svg></span><h3>Chọn mẫu hoa</h3><p>Duyệt theo danh mục, dịp tặng hoặc tìm kiếm nhanh.</p></div>
+            <div class="step"><span class="fi"><svg class="icon"><use href="#i-pen" /></svg></span><h3>Viết lời nhắn</h3><p>Floria viết tay lời chúc của bạn lên thiệp xinh.</p></div>
+            <div class="step"><span class="fi"><svg class="icon"><use href="#i-card" /></svg></span><h3>Thanh toán</h3><p>Thanh toán online qua VNPay hoặc khi nhận hàng.</p></div>
+            <div class="step"><span class="fi"><svg class="icon"><use href="#i-truck" /></svg></span><h3>Nhận hoa</h3><p>Giao đúng khung giờ, kèm ảnh chụp thực tế.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="section bg-paper">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Bán chạy nhất</span>
+                <h2 class="section-title" data-split>Khách hàng <em>yêu thích</em></h2>
+            </div>
+        </div>
+        <div class="product-grid" data-stagger="0.08">
+            @foreach (var p in Model.BestSellers) { <partial name="_ProductCard" model="p" /> }
+        </div>
+    </div>
+</section>
+
+<section class="section bg-sage">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Cảm nhận</span>
+                <h2 class="section-title" data-split>Lời yêu thương <em>gửi lại</em></h2>
+            </div>
+        </div>
+        <div class="testi-grid" data-stagger="0.12">
+            <div class="testi"><span class="stars">★★★★★</span><q>Hoa đẹp y hình, giao đúng giờ sinh nhật bạn gái. Shop còn gửi ảnh trước khi giao nên mình rất yên tâm!</q><div class="who"><span class="avatar">HN</span><div><b>Hoàng Nam</b><br /><small>Ninh Kiều, Cần Thơ</small></div></div></div>
+            <div class="testi"><span class="stars">★★★★★</span><q>Đặt kệ hoa khai trương cho đối tác, được giao và lắp đặt tận nơi rất chuyên nghiệp. Sẽ ủng hộ dài dài.</q><div class="who"><span class="avatar" style="background:var(--rose)">TL</span><div><b>Thùy Linh</b><br /><small>Cái Răng, Cần Thơ</small></div></div></div>
+            <div class="testi"><span class="stars">★★★★★</span><q>Thanh toán VNPay nhanh gọn, thiệp viết tay rất xinh. Mẹ mình nhận hoa 20/10 mà cảm động lắm.</q><div class="who"><span class="avatar" style="background:var(--gold)">MA</span><div><b>Minh Anh</b><br /><small>Bình Thủy, Cần Thơ</small></div></div></div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Posts.Any())
+{
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">Cẩm nang hoa</span>
+                    <h2 class="section-title" data-split>Tin tức & <em>mẹo hay</em></h2>
+                </div>
+                <a href="/tin-tuc" class="link-arrow reveal">Tất cả bài viết <svg class="icon"><use href="#i-arrow" /></svg></a>
+            </div>
+            <div class="post-grid" data-stagger="0.1">
+                @foreach (var p in Model.Posts)
+                {
+                    <a href="/tin-tuc/@p.Slug" class="post-card">
+                        <div class="post-img"><img src="@p.Image.ImageOrDefault()" alt="@p.Title" loading="lazy" /></div>
+                        <div class="post-meta"><span>@p.CreatedAt.ToLocal()[..10]</span><span>@p.Views lượt xem</span></div>
+                        <h3>@p.Title</h3>
+                        <p>@p.Summary</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="section-sm">
+    <div class="container">
+        <div class="cta-band reveal" data-reveal="zoom">
+            <img src="/img/flowers/p02.svg" alt="" />
+            <div>
+                <h2>Trở thành <em>thành viên</em><br />của Floria</h2>
+                <p style="color:#B6A79E;margin:0">Đăng ký tài khoản để lưu thông tin giao hoa, theo dõi và quản lý đơn hàng chỉ với một cú chạm.</p>
+            </div>
+            <div>
+                <a href="/tai-khoan/dang-ky" class="btn btn-rose btn-block">Đăng ký ngay <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></a>
+                <p style="color:#B6A79E;margin:12px 0 0;font-size:13px;text-align:center">Đã có tài khoản? <a href="/tai-khoan/dang-nhap" style="color:#fff;text-decoration:underline">Đăng nhập</a></p>
+            </div>
+        </div>
+    </div>
+</section>

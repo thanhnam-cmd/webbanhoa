@@ -1,0 +1,29 @@
+@model ContactMessage
+@{ ViewData["Title"] = "Liên hệ"; }
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span>Liên hệ</span></div>
+        <h1 data-split>Liên hệ với <em class="serif" style="color:var(--rose)">Floria</em></h1>
+        <p class="reveal">Cần tư vấn mẫu hoa, đặt hoa sự kiện hay hỗ trợ đơn hàng? Hãy để lại lời nhắn, chúng tôi phản hồi trong 30 phút.</p>
+    </div>
+</section>
+<section class="container contact-grid">
+    <div class="card contact-info reveal" data-reveal="left">
+        <div><span class="fi"><svg class="icon"><use href="#i-map" /></svg></span><span><b>Cửa hàng</b><br />256 Nguyễn Văn Cừ, An Hòa, Ninh Kiều, Cần Thơ</span></div>
+        <div><span class="fi"><svg class="icon"><use href="#i-phone" /></svg></span><span><b>Hotline</b><br />1900 6868 – 0901 234 567</span></div>
+        <div><span class="fi"><svg class="icon"><use href="#i-mail" /></svg></span><span><b>Email</b><br />hello&#64;floria.vn</span></div>
+        <div><span class="fi"><svg class="icon"><use href="#i-clock" /></svg></span><span><b>Giờ mở cửa</b><br />7:00 – 21:30, tất cả các ngày</span></div>
+        <div class="map-box"><iframe loading="lazy" src="https://www.google.com/maps?q=Nguyen+Van+Cu+Ninh+Kieu+Can+Tho&output=embed" title="Bản đồ"></iframe></div>
+    </div>
+    <form method="post" action="/lien-he" class="card reveal" data-reveal="right">
+        @Html.AntiForgeryToken()
+        <h3 class="card-title">Gửi lời nhắn</h3>
+        <div class="grid-2">
+            <div class="field"><label>Họ và tên</label><input class="input" asp-for="FullName" /><span asp-validation-for="FullName"></span></div>
+            <div class="field"><label>Số điện thoại</label><input class="input" asp-for="Phone" /></div>
+        </div>
+        <div class="field"><label>Email</label><input class="input" asp-for="Email" /><span asp-validation-for="Email"></span></div>
+        <div class="field"><label>Nội dung</label><textarea class="input" asp-for="Message" rows="6"></textarea><span asp-validation-for="Message"></span></div>
+        <button class="btn btn-primary">Gửi liên hệ <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></button>
+    </form>
+</section>

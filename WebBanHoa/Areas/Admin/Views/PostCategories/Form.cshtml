@@ -1,0 +1,11 @@
+@model PostCategory
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm danh mục tin" : "Sửa danh mục tin"; }
+<div class="page-head"><div><h2>@ViewData["Title"]</h2><p><a href="/Admin/PostCategories">← Danh mục tin tức</a></p></div></div>
+<form method="post" action="/Admin/PostCategories/Save" class="panel" style="max-width:640px">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly"></div>
+    <div class="field"><label asp-for="Name"></label><input class="input" asp-for="Name" /><span asp-validation-for="Name"></span></div>
+    <label class="switch"><input type="checkbox" asp-for="IsActive" /> Hiển thị</label>
+    <button class="btn btn-primary">Lưu</button>
+</form>

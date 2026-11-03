@@ -1,0 +1,88 @@
+@model DashboardViewModel
+@{ ViewData["Title"] = "Tổng quan"; }
+<div class="page-head">
+    <div><h2>Chào buổi làm việc, @User.Identity?.Name 🌸</h2><p>Tình hình kinh doanh của Floria hôm nay.</p></div>
+    <a href="/Admin/Products/Create" class="btn btn-rose"><svg class="icon"><use href="#i-plus" /></svg> Thêm sản phẩm</a>
+</div>
+
+<div class="stats">
+    <div class="stat"><div class="ic c-rose"><svg class="icon"><use href="#i-card" /></svg></div><b>@Model.Revenue.ToVnd()</b><span>Tổng doanh thu</span></div>
+    <div class="stat"><div class="ic c-sage"><svg class="icon"><use href="#i-clock" /></svg></div><b>@Model.RevenueThisMonth.ToVnd()</b><span>Doanh thu tháng này</span></div>
+    <div class="stat"><div class="ic c-gold"><svg class="icon"><use href="#i-list" /></svg></div><b>@Model.Orders</b><span>Đơn hàng</span>@if (Model.PendingOrders > 0) { <small class="st-warn">@Model.PendingOrders chờ duyệt</small> }</div>
+    <div class="stat"><div class="ic c-blue"><svg class="icon"><use href="#i-user" /></svg></div><b>@Model.Customers</b><span>Khách hàng · @Model.Products sản phẩm</span></div>
+</div>
+
+<div class="grid-dash">
+    <div class="panel">
+        <div class="panel-head"><h3>Doanh thu 6 tháng gần nhất</h3></div>
+        <div style="height:300px"><canvas id="revChart"></canvas></div>
+    </div>
+    <div class="panel">
+        <div class="panel-head"><h3>Trạng thái đơn hàng</h3></div>
+        <div style="height:300px"><canvas id="stChart"></canvas></div>
+    </div>
+</div>
+
+<div class="grid-dash" style="margin-top:20px">
+    <div class="panel">
+        <div class="panel-head"><h3>Đơn hàng mới nhất</h3><a href="/Admin/Orders" class="btn btn-ghost btn-sm">Xem tất cả</a></div>
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Trạng thái</th><th class="r">Tổng tiền</th></tr></thead>
+                <tbody>
+                    @foreach (var o in Model.LatestOrders)
+                    {
+                        <tr onclick="location.href='/Admin/Orders/Detail/@o.Id'" style="cursor:pointer">
+                            <td class="name">#@o.Code</td>
+                            <td>@o.SenderName<div class="sub">@o.SenderPhone</div></td>
+                            <td>@o.CreatedAt.ToLocal()</td>
+                            <td><span class="pill st-@o.Status.Css()">@o.Status.Label()</span></td>
+                            <td class="r"><b>@o.Total.ToVnd()</b></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div>
+        <div class="panel">
+            <div class="panel-head"><h3>Sản phẩm bán chạy</h3></div>
+            @foreach (var t in Model.TopProducts)
+            {
+                <div class="list-row"><img src="@t.Image.ImageOrDefault()" alt="" /><div class="grow"><div class="name">@t.Name</div><div class="sub" style="color:var(--muted);font-size:12.5px">@t.Amount.ToVnd()</div></div><b>@t.Qty</b></div>
+            }
+        </div>
+        <div class="panel">
+            <div class="panel-head"><h3>Sắp hết hàng</h3><a href="/Admin/Products" class="btn btn-ghost btn-sm">Quản lý</a></div>
+            @if (!Model.LowStock.Any()) { <div class="empty" style="padding:10px">Tất cả sản phẩm đủ hàng ✓</div> }
+            @foreach (var p in Model.LowStock)
+            {
+                <div class="list-row"><img src="@p.Image.ImageOrDefault()" alt="" /><div class="grow"><div>@p.Name</div></div><span class="pill @(p.Stock < 10 ? "st-danger" : "st-warn")">Còn @p.Stock</span></div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = "'Be Vietnam Pro', sans-serif";
+        Chart.defaults.color = "#94877F";
+        const ctx = document.getElementById("revChart");
+        const grad = ctx.getContext("2d").createLinearGradient(0, 0, 0, 260);
+        grad.addColorStop(0, "rgba(200,80,106,.35)"); grad.addColorStop(1, "rgba(200,80,106,0)");
+        new Chart(ctx, {
+            type: "line",
+            data: { labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthLabels)),
+                datasets: [{ label: "Doanh thu", data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthRevenue)), borderColor: "#C8506A", backgroundColor: grad, fill: true, tension: .4, pointRadius: 5, pointBackgroundColor: "#fff", pointBorderWidth: 2 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y.toLocaleString("vi-VN") + "₫" } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => (v / 1e6).toLocaleString("vi-VN") + "tr" }, grid: { color: "#F1ECE7" } }, x: { grid: { display: false } } } }
+        });
+        new Chart(document.getElementById("stChart"), {
+            type: "doughnut",
+            data: { labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusCounts.Keys)),
+                datasets: [{ data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusCounts.Values)), backgroundColor: ["#E9B44C", "#5B8DEF", "#9F7AEA", "#5E7D58", "#C2412D"], borderWidth: 0 }] },
+            options: { maintainAspectRatio: false, cutout: "68%", plugins: { legend: { position: "bottom", labels: { usePointStyle: true, padding: 14 } } } }
+        });
+    </script>
+}

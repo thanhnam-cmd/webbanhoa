@@ -1,0 +1,89 @@
+@{
+    Layout = null;
+    decimal amount = ViewBag.Amount;
+    var banks = new[] { "NCB", "VCB", "BIDV", "ACB", "TCB", "MB", "VIB", "TPB" };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cổng thanh toán Sandbox | Floria</title>
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="gw">
+        <div class="gw-card">
+            <div class="gw-side">
+                <div style="font-weight:800;font-size:20px;letter-spacing:.5px">FLORIA PAY · SANDBOX</div>
+                <div style="font-size:13px;opacity:.8">Cổng thanh toán mô phỏng theo chuẩn VNPay 2.1.0 – dùng cho môi trường demo, không trừ tiền thật.</div>
+                <div style="margin-top:10px">
+                    <div style="opacity:.75;font-size:13px">Số tiền thanh toán</div>
+                    <div class="amt">@amount.ToVnd()</div>
+                </div>
+                <div><div style="opacity:.75;font-size:13px">Nội dung</div><b>@ViewBag.OrderInfo</b></div>
+                <div><div style="opacity:.75;font-size:13px">Mã giao dịch</div><b>@ViewBag.TxnRef</b></div>
+                <div style="margin-top:auto"><div style="opacity:.75;font-size:13px;margin-bottom:6px">Giao dịch hết hạn sau</div><span class="gw-timer" id="timer">15:00</span></div>
+            </div>
+            <form class="gw-main" method="post" action="/payment/demo-gateway" id="gwForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="query" value="@ViewBag.Query" />
+                <input type="hidden" name="decision" id="decision" value="pay" />
+
+                <div class="gw-step active" data-step="1">
+                    <h2 style="font-size:20px;margin-bottom:16px">Chọn ngân hàng thanh toán</h2>
+                    <div class="gw-banks">
+                        @foreach (var b in banks)
+                        {
+                            <label><input type="radio" name="bankCode" value="@b" checked="@(b == "NCB")" /><span>@b</span></label>
+                        }
+                    </div>
+                    <div class="gw-note">Thẻ test: <b>9704 1985 2619 1432 198</b> · Chủ thẻ: <b>NGUYEN VAN A</b> · Ngày phát hành: <b>07/15</b> · OTP: <b>123456</b></div>
+                    <div class="field"><label>Số thẻ</label><input class="input" id="card" value="9704 1985 2619 1432 198" inputmode="numeric" /></div>
+                    <div class="grid-2">
+                        <div class="field"><label>Tên chủ thẻ</label><input class="input" value="NGUYEN VAN A" /></div>
+                        <div class="field"><label>Ngày phát hành</label><input class="input" value="07/15" /></div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <button type="button" class="btn btn-primary" style="background:#0B4EA2;flex:1" id="toOtp">Tiếp tục</button>
+                        <button type="button" class="btn btn-ghost" data-cancel>Hủy giao dịch</button>
+                    </div>
+                </div>
+
+                <div class="gw-step" data-step="2">
+                    <h2 style="font-size:20px;margin-bottom:6px">Xác thực OTP</h2>
+                    <p style="color:#5C6B7A;font-size:14px">Mã OTP đã được gửi tới số điện thoại đăng ký của chủ thẻ (sandbox: <b>123456</b>).</p>
+                    <div class="field"><label>Mã OTP</label><input class="input" id="otp" maxlength="6" inputmode="numeric" placeholder="••••••" style="font-size:22px;letter-spacing:8px;text-align:center" /></div>
+                    <p id="otpErr" style="color:#C2412D;font-size:13px" hidden>Mã OTP không đúng, vui lòng thử lại.</p>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <button type="submit" class="btn btn-primary" style="background:#0B4EA2;flex:1" id="payBtn">Thanh toán @amount.ToVnd()</button>
+                        <button type="button" class="btn btn-ghost" data-cancel>Hủy giao dịch</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        (() => {
+            const form = document.getElementById("gwForm"), steps = document.querySelectorAll(".gw-step");
+            const show = n => steps.forEach(s => s.classList.toggle("active", s.dataset.step == n));
+            document.getElementById("toOtp").onclick = () => { show(2); document.getElementById("otp").focus(); };
+            document.querySelectorAll("[data-cancel]").forEach(b => b.onclick = () => { document.getElementById("decision").value = "cancel"; form.submit(); });
+            form.addEventListener("submit", e => {
+                if (document.getElementById("decision").value === "pay" && document.getElementById("otp").value !== "123456") {
+                    e.preventDefault(); document.getElementById("otpErr").hidden = false; return;
+                }
+                const b = document.getElementById("payBtn"); setTimeout(() => { b.disabled = true; b.textContent = "Đang xử lý…"; });
+            });
+            let left = 900; const t = document.getElementById("timer");
+            setInterval(() => {
+                left = Math.max(0, left - 1);
+                t.textContent = String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0");
+                if (left === 0) { document.getElementById("decision").value = "cancel"; form.submit(); }
+            }, 1000);
+        })();
+    </script>
+</body>
+</html>

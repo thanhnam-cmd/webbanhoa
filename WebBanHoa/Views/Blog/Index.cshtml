@@ -1,0 +1,32 @@
+@model List<Post>
+@{
+    ViewData["Title"] = "Tin tức & Cẩm nang hoa";
+    var cats = (List<PostCategory>)ViewBag.Categories;
+    string? current = ViewBag.Current;
+}
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span>Tin tức</span></div>
+        <h1 data-split>Cẩm nang <em class="serif" style="color:var(--rose)">hoa tươi</em></h1>
+        <p class="reveal">Ý nghĩa các loài hoa, mẹo chăm sóc và những ưu đãi mới nhất từ Floria.</p>
+        <img class="deco" src="/img/flowers/p08.svg" alt="" style="border-radius:50%" data-parallax="0.1" />
+    </div>
+</section>
+<section class="container">
+    <div class="search-tags reveal" style="margin:0 0 34px">
+        <a class="chip @(string.IsNullOrEmpty(current) ? "active" : "")" href="/tin-tuc">Tất cả</a>
+        @foreach (var c in cats) { <a class="chip @(current == c.Slug ? "active" : "")" href="/tin-tuc?category=@c.Slug">@c.Name</a> }
+    </div>
+    @if (!Model.Any()) { <div class="empty"><h3>Chưa có bài viết</h3></div> }
+    <div class="post-grid" data-stagger="0.08">
+        @foreach (var p in Model)
+        {
+            <a href="/tin-tuc/@p.Slug" class="post-card">
+                <div class="post-img"><img src="@p.Image.ImageOrDefault()" alt="@p.Title" loading="lazy" /></div>
+                <div class="post-meta"><span>@p.PostCategory?.Name</span><span>@p.CreatedAt.ToLocal()[..10]</span></div>
+                <h3>@p.Title</h3>
+                <p>@p.Summary</p>
+            </a>
+        }
+    </div>
+</section>

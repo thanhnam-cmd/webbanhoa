@@ -1,0 +1,34 @@
+@model PagedList<Category>
+@{ ViewData["Title"] = "Danh mục sản phẩm"; }
+<div class="page-head">
+    <div><h2>Danh mục sản phẩm</h2><p>Nhóm sản phẩm theo kiểu dáng: bó hoa, hộp hoa, giỏ hoa…</p></div>
+    <a href="/Admin/Categories/Create" class="btn btn-rose"><svg class="icon"><use href="#i-plus" /></svg> Thêm danh mục</a>
+</div>
+<div class="panel">
+    <div class="panel-head">
+        <form class="search"><svg class="icon"><use href="#i-search" /></svg><input class="input" name="q" value="@Model.Q" placeholder="Tìm danh mục…" /></form>
+    </div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Danh mục</th><th>Đường dẫn</th><th>Số SP</th><th>Thứ tự</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>@c.Id</td>
+                        <td><div style="display:flex;gap:12px;align-items:center"><img class="thumb" src="@c.Image.ImageOrDefault()" alt="" /><div><div class="name">@c.Name</div><div class="sub">@c.Description</div></div></div></td>
+                        <td class="sub">/@c.Slug</td>
+                        <td>@c.Products.Count</td>
+                        <td>@c.SortOrder</td>
+                        <td><span class="pill @(c.IsActive ? "st-ok" : "st-muted")">@(c.IsActive ? "Hiển thị" : "Ẩn")</span></td>
+                        <td><div class="actions">
+                            <a href="/Admin/Categories/Edit/@c.Id" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-pen" /></svg> Sửa</a>
+                            <form method="post" action="/Admin/Categories/Delete/@c.Id" data-confirm="Xóa danh mục “@c.Name”?">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm icon-btn" title="Xóa"><svg class="icon icon-sm"><use href="#i-trash" /></svg></button></form>
+                        </div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Pager" model="(Model.Page, Model.TotalPages, Model.Total, Helpers.QueryQ(Model.Q))" />
+</div>

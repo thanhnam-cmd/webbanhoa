@@ -1,0 +1,23 @@
+@model Product
+<article class="product-card">
+    <div class="product-media">
+        @if (Model.Stock <= 0) { <span class="tag tag-out">Hết hàng</span> }
+        else if (Model.DiscountPercent > 0) { <span class="tag">-@Model.DiscountPercent%</span> }
+        @if (Model.IsFeatured) { <span class="tag tag-sage">Bán chạy</span> }
+        <a href="/san-pham/@Model.Slug" tabindex="-1"><img src="@Model.Image.ImageOrDefault()" alt="@Model.Name" loading="lazy" /></a>
+        <form class="quick-add" method="post" action="/gio-hang/them" data-ajax-cart>
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <input type="hidden" name="quantity" value="1" />
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-sm" @(Model.Stock <= 0 ? "disabled" : "")><svg class="icon icon-sm"><use href="#i-bag" /></svg><span>Thêm vào giỏ</span></button>
+        </form>
+    </div>
+    <div class="product-info">
+        @if (Model.Category != null) { <div class="cat">@Model.Category.Name</div> }
+        <h3><a href="/san-pham/@Model.Slug">@Model.Name</a></h3>
+        <div class="price">
+            <b>@Model.FinalPrice.ToVnd()</b>
+            @if (Model.DiscountPercent > 0) { <s>@Model.Price.ToVnd()</s> }
+        </div>
+    </div>
+</article>

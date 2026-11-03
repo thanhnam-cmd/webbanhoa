@@ -1,0 +1,73 @@
+@model Order
+@{
+    var steps = new[] { OrderStatus.ChoXacNhan, OrderStatus.DaXacNhan, OrderStatus.DangGiao, OrderStatus.HoanThanh };
+    var cur = (int)Model.Status;
+}
+<div class="card">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+        <div>
+            <div style="color:var(--muted);font-size:13px">Mã đơn hàng</div>
+            <div class="serif" style="font-size:30px;font-weight:700">#@Model.Code</div>
+            <div style="color:var(--muted);font-size:13px">Đặt lúc @Model.CreatedAt.ToLocal()</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="status-pill st-@Model.Status.Css()">@Model.Status.Label()</span>
+            <span class="status-pill st-@Model.PaymentStatus.Css()">@Model.PaymentStatus.Label()</span>
+        </div>
+    </div>
+
+    @if (Model.Status == OrderStatus.DaHuy)
+    {
+        <p style="background:#FDECEA;color:var(--danger);padding:12px 16px;border-radius:14px;margin:20px 0 0">Đơn hàng đã bị hủy. Lý do: @(Model.CancelReason ?? "—")</p>
+    }
+    else
+    {
+        <div class="timeline">
+            @for (var i = 0; i < steps.Length; i++)
+            {
+                <div class="tl @(cur >= i ? "done" : "")"><i>@(cur >= i ? "✓" : (i + 1).ToString())</i>@steps[i].Label()</div>
+            }
+        </div>
+    }
+
+    <table class="order-table">
+        <thead><tr><th>Sản phẩm</th><th class="r">Đơn giá</th><th class="r">SL</th><th class="r">Thành tiền</th></tr></thead>
+        <tbody>
+            @foreach (var d in Model.Details)
+            {
+                <tr>
+                    <td><div style="display:flex;gap:12px;align-items:center"><img src="@d.Image.ImageOrDefault()" alt="" style="width:52px;height:52px;border-radius:12px" />@d.ProductName</div></td>
+                    <td class="r">@d.Price.ToVnd()</td>
+                    <td class="r">@d.Quantity</td>
+                    <td class="r"><b>@((d.Price * d.Quantity).ToVnd())</b></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr><td colspan="3" class="r">Tạm tính</td><td class="r">@Model.Subtotal.ToVnd()</td></tr>
+            <tr><td colspan="3" class="r">Phí giao hàng</td><td class="r">@(Model.ShippingFee == 0 ? "Miễn phí" : Model.ShippingFee.ToVnd())</td></tr>
+            <tr><td colspan="3" class="r"><b>Tổng cộng</b></td><td class="r"><b style="color:var(--rose-d);font-size:20px">@Model.Total.ToVnd()</b></td></tr>
+        </tfoot>
+    </table>
+
+    <div class="info-grid" style="margin-top:26px">
+        <div>
+            <h4>Người nhận</h4>
+            <p><b>@Model.ReceiverName</b> · @Model.ReceiverPhone</p>
+            <p>@Model.Address</p>
+            <p>Giao ngày <b>@Model.DeliveryDate.ToString("dd/MM/yyyy")</b>, khung giờ <b>@Model.DeliverySlot</b></p>
+        </div>
+        <div>
+            <h4>Người gửi & thanh toán</h4>
+            <p><b>@Model.SenderName</b> · @Model.SenderPhone</p>
+            <p>@Model.PaymentMethod.Label()</p>
+            @if (!string.IsNullOrEmpty(Model.CardMessage)) { <p>Thiệp: <i>“@Model.CardMessage”</i></p> }
+            @if (!string.IsNullOrEmpty(Model.Note)) { <p>Ghi chú: @Model.Note</p> }
+        </div>
+    </div>
+
+    @if (Model.PaymentMethod == PaymentMethod.VNPay && Model.PaymentStatus != PaymentStatus.DaThanhToan && Model.Status != OrderStatus.DaHuy)
+    {
+        <a href="/thanh-toan-lai/@Model.Code" class="btn btn-rose" style="margin-top:22px"><svg class="icon"><use href="#i-card" /></svg> Thanh toán lại qua VNPay</a>
+    }
+</div>

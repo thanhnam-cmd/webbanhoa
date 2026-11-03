@@ -1,0 +1,34 @@
+@model List<Order>
+@{ ViewData["Title"] = "Đơn hàng của tôi"; }
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span><a href="/tai-khoan">Tài khoản</a></span><span>Đơn hàng</span></div>
+        <h1 data-split>Đơn hàng của tôi</h1>
+    </div>
+</section>
+<section class="container account-layout">
+    <partial name="_AccountNav" />
+    <div>
+        @if (!Model.Any())
+        {
+            <div class="empty"><h3>Bạn chưa có đơn hàng nào</h3><p>Hãy gửi tặng một bó hoa xinh cho người thương nhé!</p><a href="/cua-hang" class="btn btn-primary">Mua sắm ngay</a></div>
+        }
+        <div data-stagger="0.06">
+            @foreach (var o in Model)
+            {
+                <a href="/tai-khoan/don-hang/@o.Code" class="order-card">
+                    <div class="order-thumbs">@foreach (var d in o.Details.Take(3)) { <img src="@d.Image.ImageOrDefault()" alt="" /> }</div>
+                    <div>
+                        <b>#@o.Code</b> <span style="color:var(--muted);font-size:13px">· @o.CreatedAt.ToLocal()</span>
+                        <div style="font-size:14px;color:var(--ink-2)">@string.Join(", ", o.Details.Select(d => d.ProductName))</div>
+                        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                            <span class="status-pill st-@o.Status.Css()">@o.Status.Label()</span>
+                            <span class="status-pill st-@o.PaymentStatus.Css()">@o.PaymentStatus.Label()</span>
+                        </div>
+                    </div>
+                    <b style="font-size:18px;color:var(--rose-d)">@o.Total.ToVnd()</b>
+                </a>
+            }
+        </div>
+    </div>
+</section>

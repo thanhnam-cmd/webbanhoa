@@ -1,0 +1,34 @@
+@model Product
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm sản phẩm" : "Sửa sản phẩm"; }
+<div class="page-head"><div><h2>@ViewData["Title"]</h2><p><a href="/Admin/Products">← Danh sách sản phẩm</a></p></div></div>
+<form method="post" action="/Admin/Products/Save" enctype="multipart/form-data" class="form-grid">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div>
+        <div class="panel">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="field"><label asp-for="Name"></label><input class="input" asp-for="Name" placeholder="VD: Bó hồng đỏ Say Đắm" /><span asp-validation-for="Name"></span></div>
+            <div class="row-2">
+                <div class="field"><label asp-for="CategoryId"></label><select class="input" asp-for="CategoryId" asp-items="ViewBag.Categories"></select></div>
+                <div class="field"><label asp-for="OccasionId"></label><select class="input" asp-for="OccasionId" asp-items="ViewBag.Occasions"><option value="">— Không chọn —</option></select></div>
+            </div>
+            <div class="field"><label asp-for="ShortDescription"></label><textarea class="input" asp-for="ShortDescription" rows="2"></textarea></div>
+            <div class="field"><label asp-for="Meaning"></label><input class="input" asp-for="Meaning" placeholder="Ý nghĩa của mẫu hoa" /></div>
+            <div class="field"><label asp-for="Description"></label><textarea class="input" asp-for="Description" rows="8"></textarea><div class="hint">Hỗ trợ HTML cơ bản: &lt;p&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;…</div></div>
+        </div>
+        <div class="panel">
+            <div class="row-2">
+                <div class="field"><label asp-for="Price"></label><input class="input" asp-for="Price" type="number" step="1000" min="0" /><span asp-validation-for="Price"></span></div>
+                <div class="field"><label asp-for="SalePrice"></label><input class="input" asp-for="SalePrice" type="number" step="1000" min="0" placeholder="Bỏ trống nếu không giảm" /><span asp-validation-for="SalePrice"></span></div>
+                <div class="field"><label asp-for="Stock"></label><input class="input" asp-for="Stock" type="number" min="0" /></div>
+                <div class="field"><label asp-for="Sku"></label><input class="input" asp-for="Sku" placeholder="Tự sinh nếu bỏ trống" /></div>
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <partial name="_ImageField" model="Model.Image" />
+        <label class="switch"><input type="checkbox" asp-for="IsActive" /> Hiển thị trên website</label>
+        <label class="switch"><input type="checkbox" asp-for="IsFeatured" /> Sản phẩm nổi bật (trang chủ)</label>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px">Lưu sản phẩm</button>
+    </div>
+</form>

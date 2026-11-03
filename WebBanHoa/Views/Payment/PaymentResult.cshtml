@@ -1,0 +1,27 @@
+@model Order?
+@{
+    bool ok = ViewBag.Ok;
+    ViewData["Title"] = ok ? "Thanh toán thành công" : "Thanh toán chưa thành công";
+}
+<section class="section-sm">
+    <div class="container">
+        <div class="result">
+            <div class="result-icon @(ok ? "" : "fail")"><svg class="icon"><use href="@(ok ? "#i-check" : "#i-x")" /></svg></div>
+            <span class="eyebrow">Kết quả thanh toán VNPay</span>
+            <h1>@(ok ? "Thanh toán thành công!" : "Thanh toán chưa thành công")</h1>
+            <p style="color:var(--ink-2)">@ViewBag.Message@(Model != null ? $" – Đơn hàng #{Model.Code}" : "")</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:24px 0 36px">
+                @if (Model != null && !ok && Model.Status != OrderStatus.DaHuy)
+                {
+                    <a href="/thanh-toan-lai/@Model.Code" class="btn btn-rose">Thử thanh toán lại</a>
+                }
+                @if (Model != null)
+                {
+                    <a href="/tra-cuu-don-hang?code=@Model.Code&phone=@Model.SenderPhone" class="btn btn-primary">Theo dõi đơn hàng</a>
+                }
+                <a href="/cua-hang" class="btn btn-outline">Tiếp tục mua sắm</a>
+            </div>
+        </div>
+        @if (Model != null) { <div style="max-width:860px;margin:0 auto" class="reveal"><partial name="_OrderBody" model="Model" /></div> }
+    </div>
+</section>

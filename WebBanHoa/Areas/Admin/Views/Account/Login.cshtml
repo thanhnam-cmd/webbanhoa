@@ -1,0 +1,35 @@
+@model AdminLoginViewModel
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập quản trị · Floria</title>
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="login">
+        <div class="login-art">
+            <img src="/img/flowers/p07.svg" alt="" style="border-radius:50%" />
+            <h1>Floria<br /><em>Admin</em></h1>
+        </div>
+        <div class="login-form">
+            <form class="inner" method="post" action="/admin/dang-nhap">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+                <h2>Đăng nhập quản trị</h2>
+                <p style="color:var(--muted);margin:0">Quản lý sản phẩm, đơn hàng và nội dung website.</p>
+                <div class="demo">Tài khoản demo: <b>admin</b> / <b>Admin@123</b></div>
+                <div asp-validation-summary="ModelOnly"></div>
+                <div class="field"><label>Tên đăng nhập</label><input class="input" asp-for="Username" autocomplete="username" /><span asp-validation-for="Username"></span></div>
+                <div class="field"><label>Mật khẩu</label><input class="input" asp-for="Password" autocomplete="current-password" /><span asp-validation-for="Password"></span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px">Đăng nhập</button>
+                <p style="text-align:center;margin-top:18px"><a href="/" style="color:var(--muted)">← Về trang chủ</a></p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

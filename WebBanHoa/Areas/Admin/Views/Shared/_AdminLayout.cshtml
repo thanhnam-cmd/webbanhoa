@@ -1,0 +1,80 @@
+@using Microsoft.EntityFrameworkCore
+@inject WebBanHoa.Data.AppDbContext Db
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+    string A(string c) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var pending = await Db.Orders.CountAsync(o => o.Status == OrderStatus.ChoXacNhan);
+    var unread = await Db.ContactMessages.CountAsync(c => !c.IsRead);
+    var adminName = User.Identity?.Name ?? "Admin";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Quản trị Floria</title>
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="~/Views/Shared/_Icons.cshtml" />
+    @Html.AntiForgeryToken()
+    <div class="admin">
+        <aside class="side">
+            <a href="/admin" class="brand"><partial name="~/Views/Shared/_Logo.cshtml" /><span>Floria<small>QUẢN TRỊ</small></span></a>
+            <a href="/admin" class="@A("Dashboard")"><svg class="icon"><use href="#i-flower" /></svg> Tổng quan</a>
+            <h6>Bán hàng</h6>
+            <a href="/Admin/Orders" class="@A("Orders")"><svg class="icon"><use href="#i-list" /></svg> Đơn hàng @if (pending > 0) { <span class="count">@pending</span> }</a>
+            <a href="/Admin/Customers" class="@A("Customers")"><svg class="icon"><use href="#i-user" /></svg> Khách hàng</a>
+            <a href="/Admin/Contacts" class="@A("Contacts")"><svg class="icon"><use href="#i-mail" /></svg> Liên hệ @if (unread > 0) { <span class="count">@unread</span> }</a>
+            <h6>Sản phẩm</h6>
+            <a href="/Admin/Products" class="@A("Products")"><svg class="icon"><use href="#i-bag" /></svg> Sản phẩm</a>
+            <a href="/Admin/Categories" class="@A("Categories")"><svg class="icon"><use href="#i-leaf" /></svg> Danh mục</a>
+            <a href="/Admin/Occasions" class="@A("Occasions")"><svg class="icon"><use href="#i-gift" /></svg> Dịp tặng</a>
+            <h6>Nội dung</h6>
+            <a href="/Admin/Sliders" class="@A("Sliders")"><svg class="icon"><use href="#i-camera" /></svg> Slide</a>
+            <a href="/Admin/PostCategories" class="@A("PostCategories")"><svg class="icon"><use href="#i-list" /></svg> Danh mục tin</a>
+            <a href="/Admin/Posts" class="@A("Posts")"><svg class="icon"><use href="#i-pen" /></svg> Tin tức</a>
+            <div class="foot">
+                <a href="/" target="_blank"><svg class="icon"><use href="#i-arrow" /></svg> Xem website</a>
+                <a href="/admin/doi-mat-khau" class="@A("Account")"><svg class="icon"><use href="#i-shield" /></svg> Đổi mật khẩu</a>
+                <form method="post" action="/admin/dang-xuat">@Html.AntiForgeryToken()<button class="btn" style="color:#CDBFB6;width:100%;padding:10px 12px"><svg class="icon"><use href="#i-logout" /></svg> Đăng xuất</button></form>
+            </div>
+        </aside>
+        <div class="side-backdrop" onclick="document.body.classList.remove('side-open')"></div>
+        <div class="main">
+            <header class="topbar">
+                <button class="btn btn-ghost icon-btn menu-btn" onclick="document.body.classList.add('side-open')" aria-label="Menu"><svg class="icon"><use href="#i-menu" /></svg></button>
+                <h1>@ViewData["Title"]</h1>
+                <div class="right">
+                    <a href="/Admin/Orders?status=ChoXacNhan" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-clock" /></svg> @pending chờ duyệt</a>
+                    <span class="who" style="text-align:right;font-size:13px;line-height:1.2"><b>@adminName</b><br /><span style="color:var(--muted)">Quản trị viên</span></span>
+                    <span class="avatar">@adminName[..1]</span>
+                </div>
+            </header>
+            <div class="content">@RenderBody()</div>
+        </div>
+    </div>
+    <div class="toast-wrap">
+        @if (TempData["Toast"] is string t)
+        {
+            <div class="toast @(TempData["ToastType"] as string == "danger" ? "danger" : "")">✿ @t</div>
+        }
+    </div>
+    <script>
+        setTimeout(() => document.querySelectorAll(".toast").forEach(t => { t.classList.add("out"); setTimeout(() => t.remove(), 400); }), 3500);
+        document.querySelectorAll("[data-confirm]").forEach(f => f.addEventListener("submit", e => { if (!confirm(f.dataset.confirm)) e.preventDefault(); }));
+        // Xem trước ảnh khi chọn file
+        document.querySelectorAll(".img-drop input[type=file]").forEach(inp => inp.addEventListener("change", () => {
+            const f = inp.files[0], img = inp.closest(".img-drop").querySelector("img");
+            if (f && img) { img.src = URL.createObjectURL(f); img.hidden = false; }
+        }));
+        document.querySelectorAll("[data-toggle-url]").forEach(cb => cb.addEventListener("change", async () => {
+            const fd = new FormData(); fd.append("__RequestVerificationToken", document.querySelector('input[name="__RequestVerificationToken"]').value);
+            await fetch(cb.dataset.toggleUrl, { method: "POST", body: fd });
+        }));
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

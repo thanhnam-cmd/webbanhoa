@@ -1,0 +1,187 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject WebBanHoa.Data.AppDbContext Db
+@inject CartService Cart
+@{
+    var navCats = await Db.Categories.Where(c => c.IsActive).OrderBy(c => c.SortOrder).ToListAsync();
+    var navOccs = await Db.Occasions.Where(o => o.IsActive).ToListAsync();
+    var cartCount = Cart.Count();
+    var path = Context.Request.Path.Value ?? "/";
+    string Active(string p) => (p == "/" ? path == "/" : path.StartsWith(p)) ? "active" : "";
+    var signedIn = User.Identity?.IsAuthenticated == true && User.Identity.AuthenticationType == "Cookies";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is string t ? t + " | Floria" : "Floria – Tiệm hoa tươi trực tuyến")</title>
+    <meta name="description" content="@(ViewData["Description"] ?? "Floria – Đặt hoa tươi online, cắm thủ công mỗi ngày, giao nhanh 2 giờ, thanh toán online an toàn.")" />
+    <meta name="theme-color" content="#FBF7F2" />
+    <link rel="icon" href="/img/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body data-toast="@TempData["Toast"]">
+    <partial name="_Icons" />
+    @Html.AntiForgeryToken()
+
+    <div class="topbar">
+        <div class="container">
+            <div class="topbar-marquee"><span>🌷 Miễn phí giao hoa cho đơn từ 500.000₫ &nbsp;·&nbsp; Giao nhanh 2 giờ nội thành &nbsp;·&nbsp; Tặng thiệp viết tay miễn phí &nbsp;·&nbsp; Thanh toán online qua VNPay an toàn</span></div>
+            <div class="topbar-links">
+                <a href="tel:19006868">Hotline 1900 6868</a>
+                <a href="/tra-cuu-don-hang">Tra cứu đơn hàng</a>
+            </div>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <button class="icon-btn menu-toggle" data-drawer-open aria-label="Mở menu"><svg class="icon"><use href="#i-menu" /></svg></button>
+            <a href="/" class="logo"><partial name="_Logo" /><span>Floria<small>Tiệm hoa tươi</small></span></a>
+            <nav class="main-nav">
+                <a href="/" class="@Active("/")">Trang chủ</a>
+                <div class="has-mega">
+                    <a href="/cua-hang" class="@Active("/cua-hang") @Active("/san-pham")">Cửa hàng <svg class="icon icon-sm"><use href="#i-chev" /></svg></a>
+                    <div class="mega">
+                        <div>
+                            <h6>Danh mục</h6>
+                            @foreach (var c in navCats) { <a href="/cua-hang?category=@c.Slug">@c.Name</a> }
+                        </div>
+                        <div>
+                            <h6>Dịp tặng</h6>
+                            @foreach (var o in navOccs) { <a href="/cua-hang?occasion=@o.Slug">@o.Name</a> }
+                        </div>
+                        <div class="mega-card">
+                            <div><h6>Ưu đãi tuần này</h6><strong>Tulip Hà Lan giảm 15%</strong></div>
+                            <a href="/cua-hang?sort=ban-chay">Khám phá →</a>
+                            <img src="/img/flowers/hero2.svg" alt="" loading="lazy" />
+                        </div>
+                    </div>
+                </div>
+                <a href="/tin-tuc" class="@Active("/tin-tuc")">Tin tức</a>
+                <a href="/gioi-thieu" class="@Active("/gioi-thieu")">Giới thiệu</a>
+                <a href="/lien-he" class="@Active("/lien-he")">Liên hệ</a>
+            </nav>
+            <div class="header-actions">
+                <button class="icon-btn" data-search-open aria-label="Tìm kiếm"><svg class="icon"><use href="#i-search" /></svg></button>
+                <div class="dropdown">
+                    <button class="icon-btn" aria-label="Tài khoản"><svg class="icon"><use href="#i-user" /></svg></button>
+                    <div class="dropdown-menu">
+                        @if (signedIn)
+                        {
+                            <div class="who">Xin chào<b>@User.Identity!.Name</b></div>
+                            <a href="/tai-khoan"><svg class="icon icon-sm"><use href="#i-user" /></svg> Tài khoản của tôi</a>
+                            <a href="/tai-khoan/don-hang"><svg class="icon icon-sm"><use href="#i-list" /></svg> Đơn hàng của tôi</a>
+                            <form method="post" action="/tai-khoan/dang-xuat">@Html.AntiForgeryToken()<button><svg class="icon icon-sm"><use href="#i-logout" /></svg> Đăng xuất</button></form>
+                        }
+                        else
+                        {
+                            <a href="/tai-khoan/dang-nhap"><svg class="icon icon-sm"><use href="#i-user" /></svg> Đăng nhập</a>
+                            <a href="/tai-khoan/dang-ky"><svg class="icon icon-sm"><use href="#i-pen" /></svg> Đăng ký tài khoản</a>
+                            <a href="/tra-cuu-don-hang"><svg class="icon icon-sm"><use href="#i-search" /></svg> Tra cứu đơn hàng</a>
+                        }
+                    </div>
+                </div>
+                <a href="/gio-hang" class="icon-btn" id="cartBtn" aria-label="Giỏ hàng">
+                    <svg class="icon"><use href="#i-bag" /></svg>
+                    <span class="badge" id="cartCount" @(cartCount == 0 ? "hidden" : "")>@cartCount</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="drawer-backdrop"></div>
+    <aside class="drawer" aria-label="Menu">
+        <div class="drawer-head">
+            <a href="/" class="logo"><partial name="_Logo" /><span>Floria</span></a>
+            <button class="icon-btn" data-drawer-close aria-label="Đóng"><svg class="icon"><use href="#i-close" /></svg></button>
+        </div>
+        <button class="btn btn-ghost btn-block" data-search-open><svg class="icon"><use href="#i-search" /></svg> Tìm hoa…</button>
+        <nav>
+            <a href="/">Trang chủ <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="/cua-hang">Cửa hàng <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="/tin-tuc">Tin tức <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="/gioi-thieu">Giới thiệu <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="/lien-he">Liên hệ <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="/tra-cuu-don-hang">Tra cứu đơn hàng <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+            <a href="@(signedIn ? "/tai-khoan" : "/tai-khoan/dang-nhap")">@(signedIn ? "Tài khoản của tôi" : "Đăng nhập / Đăng ký") <svg class="icon icon-sm"><use href="#i-arrow" /></svg></a>
+        </nav>
+        <h6>Danh mục</h6>
+        <div class="chips">@foreach (var c in navCats) { <a class="chip" href="/cua-hang?category=@c.Slug">@c.Name</a> }</div>
+        <h6>Dịp tặng</h6>
+        <div class="chips">@foreach (var o in navOccs) { <a class="chip" href="/cua-hang?occasion=@o.Slug">@o.Name</a> }</div>
+    </aside>
+
+    <div class="search-overlay" role="dialog" aria-label="Tìm kiếm">
+        <div class="search-panel">
+            <div class="container">
+                <form class="search-form" action="/cua-hang">
+                    <svg class="icon" style="width:28px;height:28px"><use href="#i-search" /></svg>
+                    <input id="searchInput" name="q" placeholder="Bạn đang tìm hoa gì?" autocomplete="off" />
+                    <button type="submit" class="btn btn-primary btn-sm">Tìm</button>
+                </form>
+                <div class="search-tags">
+                    <span style="color:var(--muted);font-size:14px;align-self:center">Gợi ý:</span>
+                    <a class="chip" href="/cua-hang?q=hồng">Hoa hồng</a>
+                    <a class="chip" href="/cua-hang?q=tulip">Tulip</a>
+                    <a class="chip" href="/cua-hang?q=hướng dương">Hướng dương</a>
+                    <a class="chip" href="/cua-hang?q=lan">Lan hồ điệp</a>
+                    <a class="chip" href="/cua-hang?occasion=sinh-nhat">Hoa sinh nhật</a>
+                </div>
+                <div class="search-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <main>@RenderBody()</main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a href="/" class="logo"><partial name="_Logo" /><span>Floria</span></a>
+                    <p>Tiệm hoa tươi trực tuyến – nơi mỗi bó hoa được cắm thủ công bằng cả trái tim, gửi trao yêu thương đúng lúc, đúng nơi.</p>
+                    <div class="pay-logos"><span>VNPAY</span><span>COD</span><span>ATM</span><span>VISA</span></div>
+                </div>
+                <div>
+                    <h5>Mua sắm</h5>
+                    @foreach (var c in navCats.Take(5)) { <a href="/cua-hang?category=@c.Slug">@c.Name</a> }
+                </div>
+                <div>
+                    <h5>Hỗ trợ</h5>
+                    <a href="/tra-cuu-don-hang">Tra cứu đơn hàng</a>
+                    <a href="/gioi-thieu">Về Floria</a>
+                    <a href="/tin-tuc">Cẩm nang hoa</a>
+                    <a href="/lien-he">Liên hệ</a>
+                    <a href="/admin">Trang quản trị</a>
+                </div>
+                <div class="footer-contact">
+                    <h5>Liên hệ</h5>
+                    <div><svg class="icon"><use href="#i-map" /></svg><span>256 Nguyễn Văn Cừ, An Hòa, Ninh Kiều, Cần Thơ</span></div>
+                    <div><svg class="icon"><use href="#i-phone" /></svg><span>1900 6868 – 0901 234 567</span></div>
+                    <div><svg class="icon"><use href="#i-mail" /></svg><span>hello&#64;floria.vn</span></div>
+                    <div><svg class="icon"><use href="#i-clock" /></svg><span>7:00 – 21:30 mỗi ngày</span></div>
+                </div>
+            </div>
+            <div class="footer-big">Floria</div>
+            <div class="footer-bottom">
+                <span>© @DateTime.Now.Year Floria. Đồ án Xây dựng website kinh doanh hoa tươi trực tuyến.</span>
+                <span>ASP.NET Core MVC · SQL Server</span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="float-actions">
+        <a href="tel:19006868" class="fab-phone" aria-label="Gọi điện"><svg class="icon"><use href="#i-phone" /></svg></a>
+        <button class="fab-top" aria-label="Lên đầu trang"><svg class="icon"><use href="#i-up" /></svg></button>
+    </div>
+    <div class="toast-wrap" aria-live="polite"></div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

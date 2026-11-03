@@ -1,0 +1,29 @@
+@model List<PostCategory>
+@{ ViewData["Title"] = "Danh mục tin tức"; }
+<div class="page-head">
+    <div><h2>Danh mục tin tức</h2><p>Nhóm các bài viết trong mục Cẩm nang hoa.</p></div>
+    <a href="/Admin/PostCategories/Create" class="btn btn-rose"><svg class="icon"><use href="#i-plus" /></svg> Thêm danh mục tin</a>
+</div>
+<div class="panel">
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Tên danh mục</th><th>Đường dẫn</th><th>Số bài viết</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.Id</td>
+                        <td class="name">@c.Name</td>
+                        <td class="sub">/tin-tuc?category=@c.Slug</td>
+                        <td>@c.Posts.Count</td>
+                        <td><span class="pill @(c.IsActive ? "st-ok" : "st-muted")">@(c.IsActive ? "Hiển thị" : "Ẩn")</span></td>
+                        <td><div class="actions">
+                            <a href="/Admin/PostCategories/Edit/@c.Id" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-pen" /></svg> Sửa</a>
+                            <form method="post" action="/Admin/PostCategories/Delete/@c.Id" data-confirm="Xóa danh mục tin “@c.Name”?">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm icon-btn"><svg class="icon icon-sm"><use href="#i-trash" /></svg></button></form>
+                        </div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

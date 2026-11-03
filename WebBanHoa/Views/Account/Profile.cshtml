@@ -1,0 +1,32 @@
+@model ProfileViewModel
+@{ ViewData["Title"] = "Tài khoản của tôi"; }
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span>Tài khoản</span></div>
+        <h1 data-split>Xin chào, @Model.FullName</h1>
+    </div>
+</section>
+<section class="container account-layout">
+    <partial name="_AccountNav" />
+    <form method="post" action="/tai-khoan" class="reveal">
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <h3 class="card-title">Thông tin cá nhân</h3>
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="grid-2">
+                <div class="field"><label>Họ và tên</label><input class="input" asp-for="FullName" /><span asp-validation-for="FullName"></span></div>
+                <div class="field"><label>Email</label><input class="input" value="@Model.Email" disabled /></div>
+                <div class="field"><label>Số điện thoại</label><input class="input" asp-for="Phone" /><span asp-validation-for="Phone"></span></div>
+                <div class="field"><label>Địa chỉ mặc định</label><input class="input" asp-for="Address" placeholder="Dùng để điền nhanh khi đặt hoa" /></div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 class="card-title">Đổi mật khẩu <small style="font-family:var(--sans);font-size:13px;color:var(--muted)">(bỏ trống nếu không đổi)</small></h3>
+            <div class="grid-2">
+                <div class="field"><label>Mật khẩu hiện tại</label><input class="input" asp-for="CurrentPassword" autocomplete="current-password" /><span asp-validation-for="CurrentPassword"></span></div>
+                <div class="field"><label>Mật khẩu mới</label><input class="input" asp-for="NewPassword" autocomplete="new-password" /><span asp-validation-for="NewPassword"></span></div>
+            </div>
+            <button class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+    </form>
+</section>

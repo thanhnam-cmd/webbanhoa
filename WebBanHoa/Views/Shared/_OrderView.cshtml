@@ -1,0 +1,21 @@
+@model Order
+@{ ViewData["Title"] = "Đơn hàng #" + Model.Code; }
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span><a href="/tai-khoan/don-hang">Đơn hàng của tôi</a></span><span>#@Model.Code</span></div>
+        <h1 data-split>Chi tiết đơn hàng</h1>
+    </div>
+</section>
+<section class="container account-layout">
+    <partial name="_AccountNav" />
+    <div class="reveal">
+        <partial name="_OrderBody" model="Model" />
+        @if (Model.Status == OrderStatus.ChoXacNhan)
+        {
+            <form method="post" action="/tai-khoan/don-hang/@Model.Code/huy" data-confirm="Bạn chắc chắn muốn hủy đơn hàng này?" style="margin-top:16px">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-ghost"><svg class="icon"><use href="#i-x" /></svg> Hủy đơn hàng</button>
+            </form>
+        }
+    </div>
+</section>

@@ -1,0 +1,92 @@
+@model ProductDetailViewModel
+@{
+    var p = Model.Product;
+    ViewData["Title"] = p.Name;
+    ViewData["Description"] = p.ShortDescription;
+}
+
+<section class="container" style="padding-top:30px">
+    <div class="crumbs" style="margin-bottom:24px">
+        <a href="/">Trang chủ</a><span><a href="/cua-hang">Cửa hàng</a></span>
+        @if (p.Category != null) { <span><a href="/cua-hang?category=@p.Category.Slug">@p.Category.Name</a></span> }
+        <span>@p.Name</span>
+    </div>
+    <div class="pd-grid">
+        <div class="pd-media reveal" data-reveal="zoom">
+            @if (p.DiscountPercent > 0) { <span class="tag">-@p.DiscountPercent%</span> }
+            <img src="@p.Image.ImageOrDefault()" alt="@p.Name" />
+        </div>
+        <div class="pd-info">
+            <div class="reveal">
+                <span class="eyebrow">@p.Category?.Name @(p.Occasion != null ? "· " + p.Occasion.Name : "")</span>
+                <h1>@p.Name</h1>
+                <div class="price">
+                    <b>@p.FinalPrice.ToVnd()</b>
+                    @if (p.DiscountPercent > 0) { <s>@p.Price.ToVnd()</s> <span class="save">Tiết kiệm @((p.Price - p.FinalPrice).ToVnd())</span> }
+                </div>
+                <p style="margin-top:16px;color:var(--ink-2)">@p.ShortDescription</p>
+                @if (!string.IsNullOrEmpty(p.Meaning)) { <div class="pd-meaning">“@p.Meaning”</div> }
+                <div class="meta-list">
+                    <div>Mã sản phẩm: <b>@p.Sku</b></div>
+                    <div>Tình trạng: <b style="color:@(p.Stock > 0 ? "var(--ok)" : "var(--danger)")">@(p.Stock > 0 ? $"Còn hàng ({p.Stock})" : "Tạm hết hàng")</b></div>
+                    <div>Đã bán: <b>@p.Sold</b></div>
+                </div>
+            </div>
+
+            <form method="post" action="/gio-hang/them" data-ajax-cart class="reveal" style="--d:.1s">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" value="@p.Id" />
+                <div class="pd-actions">
+                    <div class="qty">
+                        <button type="button" data-step="-1" aria-label="Giảm"><svg class="icon icon-sm"><use href="#i-minus" /></svg></button>
+                        <input type="number" name="quantity" value="1" min="1" max="99" aria-label="Số lượng" />
+                        <button type="button" data-step="1" aria-label="Tăng"><svg class="icon icon-sm"><use href="#i-plus" /></svg></button>
+                    </div>
+                    <button type="submit" class="btn btn-outline" @(p.Stock <= 0 ? "disabled" : "")><svg class="icon"><use href="#i-bag" /></svg> Thêm vào giỏ</button>
+                    <button type="submit" name="buyNow" value="true" class="btn btn-rose" @(p.Stock <= 0 ? "disabled" : "")>Mua ngay <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></button>
+                </div>
+            </form>
+
+            <div class="perks" data-stagger="0.06">
+                <div><svg class="icon"><use href="#i-truck" /></svg> Giao nhanh 2 giờ nội thành</div>
+                <div><svg class="icon"><use href="#i-gift" /></svg> Tặng thiệp viết tay</div>
+                <div><svg class="icon"><use href="#i-camera" /></svg> Chụp ảnh trước khi giao</div>
+                <div><svg class="icon"><use href="#i-shield" /></svg> Thanh toán VNPay an toàn</div>
+            </div>
+
+            <div class="tabs reveal">
+                <div class="tab-btns"><button class="active">Mô tả</button><button>Giao hàng</button><button>Chăm sóc hoa</button></div>
+                <div class="tab-panel prose active">@Html.Raw(p.Description)</div>
+                <div class="tab-panel prose">
+                    <ul>
+                        <li>Giao nhanh trong 2 giờ tại khu vực nội thành Cần Thơ.</li>
+                        <li>Phí giao hàng 30.000₫, <b>miễn phí</b> cho đơn từ 500.000₫.</li>
+                        <li>Bạn có thể chọn ngày và khung giờ giao khi thanh toán.</li>
+                        <li>Floria gửi ảnh thực tế qua Zalo/SMS trước khi giao.</li>
+                    </ul>
+                </div>
+                <div class="tab-panel prose">
+                    <ul>
+                        <li>Cắt chéo gốc 2–3cm và cắm vào bình nước sạch ngay khi nhận.</li>
+                        <li>Thay nước mỗi ngày, đặt hoa nơi thoáng mát, tránh nắng trực tiếp.</li>
+                        <li>Không đặt hoa cạnh trái cây chín để hoa tươi lâu hơn.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Related.Any())
+{
+    <section class="section">
+        <div class="container">
+            <div class="section-head">
+                <div><span class="eyebrow">Có thể bạn thích</span><h2 class="section-title" data-split>Sản phẩm <em>liên quan</em></h2></div>
+            </div>
+            <div class="product-grid" data-stagger="0.08">
+                @foreach (var r in Model.Related) { <partial name="_ProductCard" model="r" /> }
+            </div>
+        </div>
+    </section>
+}

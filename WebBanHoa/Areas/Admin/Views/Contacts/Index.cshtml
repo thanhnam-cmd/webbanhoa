@@ -1,0 +1,21 @@
+@model List<ContactMessage>
+@{ ViewData["Title"] = "Liên hệ"; }
+<div class="page-head"><div><h2>Liên hệ từ khách hàng</h2><p>Lời nhắn gửi qua trang Liên hệ.</p></div></div>
+<div class="panel">
+    @if (!Model.Any()) { <div class="empty">Chưa có liên hệ nào</div> }
+    @foreach (var c in Model)
+    {
+        <div class="list-row" style="align-items:flex-start">
+            <span class="avatar" style="width:38px;height:38px;background:@(c.IsRead ? "#BDB1A9" : "var(--rose)")">@c.FullName[..1]</span>
+            <div class="grow">
+                <div><b>@c.FullName</b> <span class="sub" style="color:var(--muted)">· @c.Email · @c.Phone · @c.CreatedAt.ToLocal()</span> @if (!c.IsRead) { <span class="pill st-warn">Mới</span> }</div>
+                <p style="margin:6px 0 0;white-space:pre-wrap">@c.Message</p>
+            </div>
+            <div class="actions" style="display:flex;gap:6px">
+                @if (!c.IsRead) { <form method="post" action="/Admin/Contacts/MarkRead/@c.Id">@Html.AntiForgeryToken()<button class="btn btn-ok btn-sm">Đã đọc</button></form> }
+                <a class="btn btn-ghost btn-sm" href="mailto:@c.Email">Trả lời</a>
+                <form method="post" action="/Admin/Contacts/Delete/@c.Id" data-confirm="Xóa liên hệ này?">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm icon-btn"><svg class="icon icon-sm"><use href="#i-trash" /></svg></button></form>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,28 @@
+# Render Blueprint: 1 web service (Docker) + 1 PostgreSQL miễn phí
+services:
+  - type: web
+    name: webbanhoa
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: webbanhoa-db
+          property: connectionString
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DemoPay__Secret
+        generateValue: true
+      # Điền khi có tài khoản merchant VNPay sandbox (để trống = dùng cổng mô phỏng)
+      - key: VnPay__TmnCode
+        sync: false
+      - key: VnPay__HashSecret
+        sync: false
+
+databases:
+  - name: webbanhoa-db
+    plan: free
+    databaseName: webbanhoa
+    user: webbanhoa

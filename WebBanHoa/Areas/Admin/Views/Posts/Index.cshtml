@@ -1,0 +1,31 @@
+@model PagedList<Post>
+@{ ViewData["Title"] = "Tin tức"; }
+<div class="page-head">
+    <div><h2>Tin tức</h2><p>Bài viết cẩm nang, khuyến mãi hiển thị ở trang Tin tức.</p></div>
+    <a href="/Admin/Posts/Create" class="btn btn-rose"><svg class="icon"><use href="#i-plus" /></svg> Viết bài mới</a>
+</div>
+<div class="panel">
+    <div class="panel-head"><form class="search"><svg class="icon"><use href="#i-search" /></svg><input class="input" name="q" value="@Model.Q" placeholder="Tìm bài viết…" /></form></div>
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Bài viết</th><th>Danh mục</th><th>Ngày đăng</th><th class="r">Lượt xem</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.Items)
+                {
+                    <tr>
+                        <td><div style="display:flex;gap:12px;align-items:center"><img class="thumb" src="@p.Image.ImageOrDefault()" alt="" /><div style="max-width:380px"><div class="name">@p.Title</div><div class="sub">@p.Summary</div></div></div></td>
+                        <td>@p.PostCategory?.Name</td>
+                        <td>@p.CreatedAt.ToLocal()</td>
+                        <td class="r">@p.Views</td>
+                        <td><span class="pill @(p.IsActive ? "st-ok" : "st-muted")">@(p.IsActive ? "Hiển thị" : "Ẩn")</span></td>
+                        <td><div class="actions">
+                            <a href="/Admin/Posts/Edit/@p.Id" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-pen" /></svg> Sửa</a>
+                            <form method="post" action="/Admin/Posts/Delete/@p.Id" data-confirm="Xóa bài viết này?">@Html.AntiForgeryToken()<button class="btn btn-danger btn-sm icon-btn"><svg class="icon icon-sm"><use href="#i-trash" /></svg></button></form>
+                        </div></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Pager" model="(Model.Page, Model.TotalPages, Model.Total, Helpers.QueryQ(Model.Q))" />
+</div>

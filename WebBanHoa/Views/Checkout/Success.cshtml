@@ -1,0 +1,17 @@
+@model Order
+@{ ViewData["Title"] = "Đặt hàng thành công"; }
+<section class="section-sm">
+    <div class="container">
+        <div class="result">
+            <div class="result-icon"><svg class="icon"><use href="#i-check" /></svg></div>
+            <span class="eyebrow">Cảm ơn bạn đã tin chọn Floria</span>
+            <h1>Đặt hàng thành công!</h1>
+            <p style="color:var(--ink-2)">Mã đơn hàng của bạn là <b>#@Model.Code</b>. Floria sẽ gọi xác nhận trong ít phút và gửi ảnh hoa thực tế trước khi giao.</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:24px 0 36px">
+                <a href="/tra-cuu-don-hang?code=@Model.Code&phone=@Model.SenderPhone" class="btn btn-primary">Theo dõi đơn hàng</a>
+                <a href="/cua-hang" class="btn btn-outline">Tiếp tục mua sắm</a>
+            </div>
+        </div>
+        <div style="max-width:860px;margin:0 auto" class="reveal"><partial name="_OrderBody" model="Model" /></div>
+    </div>
+</section>

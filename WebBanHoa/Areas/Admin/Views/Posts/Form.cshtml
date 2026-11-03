@@ -1,0 +1,19 @@
+@model Post
+@{ ViewData["Title"] = Model.Id == 0 ? "Viết bài mới" : "Sửa bài viết"; }
+<div class="page-head"><div><h2>@ViewData["Title"]</h2><p><a href="/Admin/Posts">← Tin tức</a></p></div></div>
+<form method="post" action="/Admin/Posts/Save" enctype="multipart/form-data" class="form-grid">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="panel">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="field"><label asp-for="Title"></label><input class="input" asp-for="Title" /><span asp-validation-for="Title"></span></div>
+        <div class="field"><label asp-for="PostCategoryId"></label><select class="input" asp-for="PostCategoryId" asp-items="ViewBag.PostCategories"></select></div>
+        <div class="field"><label asp-for="Summary"></label><textarea class="input" asp-for="Summary" rows="3"></textarea></div>
+        <div class="field"><label asp-for="Content"></label><textarea class="input" asp-for="Content" rows="14"></textarea><div class="hint">Hỗ trợ HTML: &lt;p&gt;, &lt;h3&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;, &lt;img&gt;…</div></div>
+    </div>
+    <div class="panel">
+        <partial name="_ImageField" model="Model.Image" />
+        <label class="switch"><input type="checkbox" asp-for="IsActive" /> Hiển thị</label>
+        <button class="btn btn-primary" style="width:100%;justify-content:center">Lưu bài viết</button>
+    </div>
+</form>

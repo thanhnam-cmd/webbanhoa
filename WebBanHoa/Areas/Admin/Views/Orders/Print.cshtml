@@ -1,0 +1,42 @@
+@model Order
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Hóa đơn #@Model.Code</title>
+    <style>
+        body { font-family: "Segoe UI", Arial, sans-serif; color: #222; max-width: 760px; margin: 30px auto; padding: 0 20px; font-size: 14px; }
+        h1 { font-family: Georgia, serif; margin: 0; font-size: 34px; }
+        .head { display: flex; justify-content: space-between; border-bottom: 2px solid #222; padding-bottom: 14px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        .r { text-align: right; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @@media print { button { display: none; } }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="head">
+        <div><h1>Floria</h1><div>256 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ · 1900 6868</div></div>
+        <div class="r"><b>HÓA ĐƠN BÁN HÀNG</b><br />Số: #@Model.Code<br />Ngày: @Model.CreatedAt.ToLocal()</div>
+    </div>
+    <div class="grid">
+        <div><b>Người gửi</b><br />@Model.SenderName<br />@Model.SenderPhone</div>
+        <div><b>Người nhận</b><br />@Model.ReceiverName – @Model.ReceiverPhone<br />@Model.Address<br />Giao: @Model.DeliveryDate.ToString("dd/MM/yyyy") (@Model.DeliverySlot)</div>
+    </div>
+    <table>
+        <tr><th>#</th><th>Sản phẩm</th><th class="r">Đơn giá</th><th class="r">SL</th><th class="r">Thành tiền</th></tr>
+        @{ var i = 1; }
+        @foreach (var d in Model.Details)
+        {
+            <tr><td>@(i++)</td><td>@d.ProductName</td><td class="r">@d.Price.ToVnd()</td><td class="r">@d.Quantity</td><td class="r">@((d.Price * d.Quantity).ToVnd())</td></tr>
+        }
+        <tr><td colspan="4" class="r">Phí giao hàng</td><td class="r">@Model.ShippingFee.ToVnd()</td></tr>
+        <tr><td colspan="4" class="r"><b>Tổng cộng</b></td><td class="r"><b>@Model.Total.ToVnd()</b></td></tr>
+    </table>
+    <p>Thanh toán: @Model.PaymentMethod.Label() – <b>@Model.PaymentStatus.Label()</b></p>
+    @if (!string.IsNullOrEmpty(Model.CardMessage)) { <p>Lời nhắn thiệp: <i>“@Model.CardMessage”</i></p> }
+    <button onclick="window.print()">In hóa đơn</button>
+</body>
+</html>

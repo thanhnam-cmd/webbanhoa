@@ -1,0 +1,12 @@
+@model Occasion
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm dịp tặng" : "Sửa dịp tặng"; }
+<div class="page-head"><div><h2>@ViewData["Title"]</h2><p><a href="/Admin/Occasions">← Dịp tặng</a></p></div></div>
+<form method="post" action="/Admin/Occasions/Save" class="panel" style="max-width:640px">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly"></div>
+    <div class="field"><label asp-for="Name"></label><input class="input" asp-for="Name" /><span asp-validation-for="Name"></span></div>
+    <div class="field"><label asp-for="Description"></label><textarea class="input" asp-for="Description"></textarea></div>
+    <label class="switch"><input type="checkbox" asp-for="IsActive" /> Hiển thị trên website</label>
+    <button class="btn btn-primary">Lưu dịp tặng</button>
+</form>

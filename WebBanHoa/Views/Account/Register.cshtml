@@ -1,0 +1,30 @@
+@model RegisterViewModel
+@{ ViewData["Title"] = "Đăng ký"; }
+<section class="auth-wrap">
+    <div class="auth-art" style="background:linear-gradient(160deg,#E7EEE3,#D5E2CF)">
+        <div class="petals"></div>
+        <img src="/img/flowers/p09.svg" alt="" style="border-radius:50%" />
+        <blockquote>“Mỗi bó hoa là một câu chuyện – hãy để Floria kể giúp bạn.”</blockquote>
+    </div>
+    <div class="auth-form">
+        <div class="inner reveal">
+            <span class="eyebrow">Thành viên Floria</span>
+            <h1>Tạo tài khoản</h1>
+            <p style="color:var(--ink-2)">Đã có tài khoản? <a href="/tai-khoan/dang-nhap" style="color:var(--rose);font-weight:600">Đăng nhập</a></p>
+            <form method="post" action="/tai-khoan/dang-ky">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly"></div>
+                <div class="field"><label asp-for="FullName">Họ và tên</label><input class="input" asp-for="FullName" placeholder="Nguyễn Văn A" autocomplete="name" /><span asp-validation-for="FullName"></span></div>
+                <div class="grid-2">
+                    <div class="field"><label asp-for="Email">Email</label><input class="input" asp-for="Email" placeholder="email@example.com" autocomplete="email" /><span asp-validation-for="Email"></span></div>
+                    <div class="field"><label asp-for="Phone">Số điện thoại</label><input class="input" asp-for="Phone" placeholder="0901 234 567" autocomplete="tel" /><span asp-validation-for="Phone"></span></div>
+                </div>
+                <div class="grid-2">
+                    <div class="field"><label asp-for="Password">Mật khẩu</label><input class="input" asp-for="Password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" /><span asp-validation-for="Password"></span></div>
+                    <div class="field"><label asp-for="ConfirmPassword">Nhập lại mật khẩu</label><input class="input" asp-for="ConfirmPassword" autocomplete="new-password" /><span asp-validation-for="ConfirmPassword"></span></div>
+                </div>
+                <button class="btn btn-primary btn-block" style="margin-top:6px">Đăng ký <svg class="icon icon-arrow"><use href="#i-arrow" /></svg></button>
+            </form>
+        </div>
+    </div>
+</section>

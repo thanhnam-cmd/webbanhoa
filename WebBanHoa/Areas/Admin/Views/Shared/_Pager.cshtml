@@ -1,0 +1,14 @@
+@model (int Page, int TotalPages, int Total, string BaseQuery)
+@{
+    string Href(int p) => "?" + Model.BaseQuery + (string.IsNullOrEmpty(Model.BaseQuery) ? "" : "&") + "page=" + p;
+}
+<div class="pager">
+    <span class="info">Tổng @Model.Total bản ghi</span>
+    @if (Model.TotalPages > 1)
+    {
+        @for (var i = 1; i <= Model.TotalPages; i++)
+        {
+            if (i == Model.Page) { <span class="current">@i</span> } else { <a href="@Href(i)">@i</a> }
+        }
+    }
+</div>

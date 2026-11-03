@@ -1,0 +1,7 @@
+@{ var path = Context.Request.Path.Value ?? ""; }
+<nav class="account-nav">
+    <a href="/tai-khoan" class="@(path == "/tai-khoan" ? "active" : "")"><svg class="icon"><use href="#i-user" /></svg> Thông tin tài khoản</a>
+    <a href="/tai-khoan/don-hang" class="@(path.StartsWith("/tai-khoan/don-hang") ? "active" : "")"><svg class="icon"><use href="#i-list" /></svg> Đơn hàng của tôi</a>
+    <a href="/cua-hang"><svg class="icon"><use href="#i-bag" /></svg> Tiếp tục mua sắm</a>
+    <form method="post" action="/tai-khoan/dang-xuat">@Html.AntiForgeryToken()<button><svg class="icon"><use href="#i-logout" /></svg> Đăng xuất</button></form>
+</nav>

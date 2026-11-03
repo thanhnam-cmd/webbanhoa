@@ -1,0 +1,116 @@
+@model ShopViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    string Link(string? category = "__", string? occasion = "__", string? sort = null, int? page = null, bool clearPrice = false)
+    {
+        var q = new List<string>();
+        var c = category == "__" ? Model.Category : category;
+        var o = occasion == "__" ? Model.Occasion : occasion;
+        if (!string.IsNullOrEmpty(Model.Q)) q.Add("q=" + Uri.EscapeDataString(Model.Q));
+        if (!string.IsNullOrEmpty(c)) q.Add("category=" + c);
+        if (!string.IsNullOrEmpty(o)) q.Add("occasion=" + o);
+        if (!clearPrice && Model.Min.HasValue) q.Add("min=" + Model.Min);
+        if (!clearPrice && Model.Max.HasValue) q.Add("max=" + Model.Max);
+        var s = sort ?? Model.Sort;
+        if (s != "moi-nhat") q.Add("sort=" + s);
+        if (page is > 1) q.Add("page=" + page);
+        return "/cua-hang" + (q.Count > 0 ? "?" + string.Join("&", q) : "");
+    }
+    var sorts = new Dictionary<string, string> { ["moi-nhat"] = "Mới nhất", ["ban-chay"] = "Bán chạy", ["gia-tang"] = "Giá tăng dần", ["gia-giam"] = "Giá giảm dần", ["ten-az"] = "Tên A → Z", ["ten-za"] = "Tên Z → A" };
+    var prices = new (string Label, decimal? Min, decimal? Max)[] { ("Dưới 500.000₫", null, 500000), ("500.000₫ – 1.000.000₫", 500000, 1000000), ("1.000.000₫ – 2.000.000₫", 1000000, 2000000), ("Trên 2.000.000₫", 2000000, null) };
+}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="crumbs"><a href="/">Trang chủ</a><span>Cửa hàng</span></div>
+        <h1 data-split>@Model.Title</h1>
+        <p class="reveal">Hoa tươi cắm thủ công mỗi ngày – chọn theo danh mục, dịp tặng hoặc mức giá phù hợp với bạn.</p>
+        <img class="deco" src="/img/flowers/hero1.svg" alt="" data-parallax="0.12" />
+    </div>
+</section>
+
+<section class="container shop-layout">
+    <aside class="filters">
+        <div class="drawer-head" style="margin-bottom:10px"><b>Bộ lọc</b><button class="icon-btn filter-toggle" data-drawer-close aria-label="Đóng"><svg class="icon"><use href="#i-close" /></svg></button></div>
+        <div class="filter-group">
+            <h4>Danh mục</h4>
+            <a href="@Link(category: null)" class="@(string.IsNullOrEmpty(Model.Category) ? "active" : "")">Tất cả</a>
+            @foreach (var c in Model.Categories) { <a href="@Link(category: c.Slug, page: 1)" class="@(Model.Category == c.Slug ? "active" : "")">@c.Name</a> }
+        </div>
+        <div class="filter-group">
+            <h4>Dịp tặng</h4>
+            <a href="@Link(occasion: null)" class="@(string.IsNullOrEmpty(Model.Occasion) ? "active" : "")">Tất cả</a>
+            @foreach (var o in Model.Occasions) { <a href="@Link(occasion: o.Slug, page: 1)" class="@(Model.Occasion == o.Slug ? "active" : "")">@o.Name</a> }
+        </div>
+        <div class="filter-group">
+            <h4>Khoảng giá</h4>
+            @foreach (var p in prices)
+            {
+                var on = Model.Min == p.Min && Model.Max == p.Max;
+                var href = Link(clearPrice: true) + (Link(clearPrice: true).Contains('?') ? "&" : "?") + string.Join("&", new[] { p.Min.HasValue ? "min=" + p.Min : null, p.Max.HasValue ? "max=" + p.Max : null }.Where(x => x != null));
+                <a href="@(on ? Link(clearPrice: true) : href)" class="@(on ? "active" : "")">@p.Label</a>
+            }
+            <form action="/cua-hang" style="margin-top:12px">
+                @if (!string.IsNullOrEmpty(Model.Q)) { <input type="hidden" name="q" value="@Model.Q" /> }
+                @if (!string.IsNullOrEmpty(Model.Category)) { <input type="hidden" name="category" value="@Model.Category" /> }
+                @if (!string.IsNullOrEmpty(Model.Occasion)) { <input type="hidden" name="occasion" value="@Model.Occasion" /> }
+                <input type="hidden" name="sort" value="@Model.Sort" />
+                <div class="price-range">
+                    <input class="input" type="number" name="min" min="0" step="50000" placeholder="Từ" value="@Model.Min" />
+                    <input class="input" type="number" name="max" min="0" step="50000" placeholder="Đến" value="@Model.Max" />
+                </div>
+                <button class="btn btn-outline btn-sm btn-block" style="margin-top:10px">Áp dụng</button>
+            </form>
+        </div>
+    </aside>
+
+    <div>
+        <div class="toolbar">
+            <span class="count">Hiển thị <b>@Model.Products.Count</b> / @Model.Total sản phẩm</span>
+            <div class="actions">
+                <button class="btn btn-ghost btn-sm filter-toggle" data-filters-open><svg class="icon icon-sm"><use href="#i-filter" /></svg> Bộ lọc</button>
+                <select class="input" style="width:auto;padding:10px 14px" onchange="location.href=this.value" aria-label="Sắp xếp">
+                    @foreach (var s in sorts) { <option value="@Link(sort: s.Key)" selected="@(Model.Sort == s.Key)">@s.Value</option> }
+                </select>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Q) || !string.IsNullOrEmpty(Model.Category) || !string.IsNullOrEmpty(Model.Occasion) || Model.Min.HasValue || Model.Max.HasValue)
+        {
+            <div class="search-tags" style="margin:-10px 0 24px">
+                @if (!string.IsNullOrEmpty(Model.Q)) { <a class="chip active" href="/cua-hang">“@Model.Q” ✕</a> }
+                @if (!string.IsNullOrEmpty(Model.Category)) { <a class="chip active" href="@Link(category: null)">@Model.Categories.FirstOrDefault(c => c.Slug == Model.Category)?.Name ✕</a> }
+                @if (!string.IsNullOrEmpty(Model.Occasion)) { <a class="chip active" href="@Link(occasion: null)">@Model.Occasions.FirstOrDefault(o => o.Slug == Model.Occasion)?.Name ✕</a> }
+                @if (Model.Min.HasValue || Model.Max.HasValue) { <a class="chip active" href="@Link(clearPrice: true)">@(Model.Min?.ToVnd() ?? "0₫") – @(Model.Max?.ToVnd() ?? "∞") ✕</a> }
+                <a class="chip" href="/cua-hang">Xóa bộ lọc</a>
+            </div>
+        }
+
+        @if (Model.Products.Any())
+        {
+            <div class="product-grid shop-grid" data-stagger="0.06">
+                @foreach (var p in Model.Products) { <partial name="_ProductCard" model="p" /> }
+            </div>
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="pager">
+                    @if (Model.Page > 1) { <a href="@Link(page: Model.Page - 1)">‹</a> }
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == Model.Page) { <span class="current">@i</span> } else { <a href="@Link(page: i)">@i</a> }
+                    }
+                    @if (Model.Page < Model.TotalPages) { <a href="@Link(page: Model.Page + 1)">›</a> }
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="empty">
+                <img src="/img/flowers/placeholder.svg" alt="" />
+                <h3>Chưa tìm thấy mẫu hoa phù hợp</h3>
+                <p>Thử bỏ bớt bộ lọc hoặc tìm với từ khóa khác bạn nhé.</p>
+                <a href="/cua-hang" class="btn btn-primary">Xem tất cả sản phẩm</a>
+            </div>
+        }
+    </div>
+</section>

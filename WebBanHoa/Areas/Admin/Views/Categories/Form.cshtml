@@ -1,0 +1,18 @@
+@model Category
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm danh mục" : "Sửa danh mục"; }
+<div class="page-head"><div><h2>@ViewData["Title"]</h2><p><a href="/Admin/Categories">← Danh mục sản phẩm</a></p></div></div>
+<form method="post" action="/Admin/Categories/Save" enctype="multipart/form-data" class="form-grid">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="panel">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="field"><label asp-for="Name"></label><input class="input" asp-for="Name" /><span asp-validation-for="Name"></span></div>
+        <div class="field"><label asp-for="Description"></label><textarea class="input" asp-for="Description"></textarea></div>
+        <div class="field" style="max-width:200px"><label asp-for="SortOrder"></label><input class="input" asp-for="SortOrder" type="number" /></div>
+        <label class="switch"><input type="checkbox" asp-for="IsActive" /> Hiển thị trên website</label>
+    </div>
+    <div class="panel">
+        <partial name="_ImageField" model="Model.Image" />
+        <button class="btn btn-primary" style="width:100%;justify-content:center">Lưu danh mục</button>
+    </div>
+</form>
