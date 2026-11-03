@@ -2,6 +2,8 @@
 
 Đồ án **Xây dựng website kinh doanh hoa tươi trực tuyến** – ASP.NET Core MVC (.NET 9) + SQL Server.
 
+🌐 **Demo:** https://webbanhoa.onrender.com · 📄 **Báo cáo:** [docs/BaoCao_DoAn_WebsiteBanHoa.docx](docs/BaoCao_DoAn_WebsiteBanHoa.docx)
+
 ![Trang chủ](docs/screenshots/01-trang-chu.png)
 
 ## Tính năng
