@@ -67,7 +67,8 @@ public class CheckoutViewModel
 
 public class LoginViewModel
 {
-    [Required(ErrorMessage = "Vui lòng nhập email"), EmailAddress(ErrorMessage = "Email không hợp lệ")]
+    // Cho phép nhập email khách hàng hoặc tên đăng nhập quản trị
+    [Required(ErrorMessage = "Vui lòng nhập email hoặc tên đăng nhập")]
     public string Email { get; set; } = "";
     [Required(ErrorMessage = "Vui lòng nhập mật khẩu"), DataType(DataType.Password)]
     public string Password { get; set; } = "";

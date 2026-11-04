@@ -22,6 +22,21 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid) return View(vm);
         var email = vm.Email.Trim().ToLower();
+
+        // Nhập tài khoản quản trị (không có @) → đăng nhập và chuyển vào trang quản trị
+        if (!email.Contains('@'))
+        {
+            var admin = await _db.AdminUsers.FirstOrDefaultAsync(x => x.Username == vm.Email.Trim());
+            if (admin != null && Passwords.Verify(admin.PasswordHash, vm.Password))
+            {
+                var adminClaims = new List<Claim> { new(ClaimTypes.NameIdentifier, admin.Id.ToString()), new(ClaimTypes.Name, admin.FullName), new("username", admin.Username) };
+                await HttpContext.SignInAsync(AuthSchemes.Admin, new ClaimsPrincipal(new ClaimsIdentity(adminClaims, AuthSchemes.Admin)));
+                return Redirect("/admin");
+            }
+            ModelState.AddModelError("", "Email/tên đăng nhập hoặc mật khẩu không đúng");
+            return View(vm);
+        }
+
         var c = await _db.Customers.FirstOrDefaultAsync(x => x.Email == email);
         if (c == null || !Passwords.Verify(c.PasswordHash, vm.Password))
         {
