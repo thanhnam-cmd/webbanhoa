@@ -59,6 +59,14 @@ Script SQL tạo bảng: [`Database/WebBanHoa_SqlServer.sql`](Database/WebBanHoa
 Repo có sẵn `Dockerfile` và `render.yaml` (Blueprint: web service Docker + PostgreSQL miễn phí).
 Trên Render chọn **New → Blueprint** → chọn repo này → **Apply**. Khi có biến `DATABASE_URL`, ứng dụng tự chuyển sang PostgreSQL.
 
+## Deploy lên VPS (đang chạy tại https://hoangtrung.vnc360.com)
+
+- Ubuntu 24.04 + aaPanel. App build dạng *self-contained* `linux-x64` (không cần cài .NET), nằm ở `/www/wwwroot/hoangtrung.vnc360.com/app`.
+- Chạy bằng systemd: `systemctl status|restart webbanhoa`, xem log: `journalctl -u webbanhoa -f`. Lắng nghe `127.0.0.1:5080`.
+- CSDL: PostgreSQL 16 trên VPS (database/user `webbanhoa`); cấu hình bí mật trong `/etc/webbanhoa.env` (chỉ root đọc được).
+- Nginx: `/www/server/panel/vhost/nginx/hoangtrung.vnc360.com.conf` (reverse proxy + HTTPS Let's Encrypt, certbot tự gia hạn).
+- Cập nhật phiên bản mới: chạy `deploy/update-vps.sh` từ Git Bash.
+
 ## Cấu trúc
 
 ```
